@@ -14,9 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+require('../../config.php');
+global $DB, $USER;
 
-defined('MOODLE_INTERNAL') || die();
+$ag_assignid = required_param('ag_assignid', PARAM_INT); 
+$msg_id = required_param('msg_id', PARAM_INT); 
+$course_id = required_param('course_id', PARAM_INT);
 
-$plugin->version   = 2016052321;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2016051900;        // Requires this Moodle version
-$plugin->component = 'block_alerts_generator'; // Full name of the plugin (used for diagnostics)
+/* Access control */
+require_login( $course_id );
+$context = context_course::instance( $course_id );
+require_capability('block/alerts_generator:viewpages', $context);
+
+$DB->delete_records('block_alerts_generator_assig', array('id' => $ag_assignid));
+
+$DB->delete_records('block_alerts_generator_msg', array('id' => $msg_id));
+
+$mensagem = "Mensagem Deletada";
+echo json_encode($mensagem);
+
+?>

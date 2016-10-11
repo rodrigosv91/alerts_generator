@@ -16,9 +16,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 $string['alerts_generator:addinstance'] = 'Add a new AG block';
-$string['pluginname'] = 'Alerts Generator';
+$string['alerts_generator:viewpages'] = 'Visualizar Páginas';
 
+$string['pluginname'] = 'Alerts Generator';
 
 $string['expire_task_alert'] = 'Alerta de tarefas expirando';
 
-$string['alertgeneratortask'] = 'Enviar Alerta de tarefas expirando';
+$string['alertgeneratortask'] = 'Gerar Alertas';
+
+$string['subject'] = 'Assunto';
+
+$string['empty_subject_message'] = 'Mensagem e Assunto em branco'; 
+$string['empty_subject'] = 'Assunto em branco';
+$string['empty_message'] = 'Mensagem em branco';
+
+$string['scheduled_alert'] = 'Alerta Cadastrado';
+$string['not_scheduled_alert'] = 'Alerta não Cadastrado';
+$string['alert_updated'] = 'Alerta Atualizado';
+$string['alert_not_updated'] = 'Alerta não Atualizado';
+$string['alert_deleted'] = 'Alerta Deletado';
+$string['alert_not_deleted'] = 'Alerta não Deletado';
+$string['confirmation_message'] = 'Você tem certeza ?';
+
+

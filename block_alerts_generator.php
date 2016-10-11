@@ -24,25 +24,27 @@ class block_alerts_generator extends block_list {
 	
     function get_content() {
      
-		global $COURSE, $DB,  $CFG;;
-		
-		
-		//$context = get_context_instance( CONTEXT_COURSE, $COURSE->id ); 
-		
-		//$query = 'select u.id as id, firstname, lastname from mdl_role_assignments as a, mdl_user as u where contextid=' . $context->id . ' and roleid=5 and a.userid=u.id;';
-							
-		//$rs = $DB->get_recordset_sql( $query );
-		
+		global $CFG, $COURSE;
+		$course = $this->page->course;
+
+		/* Access control */
+		$context = context_course::instance($course->id);
+		$canview = has_capability('block/alerts_generator:viewpages', $context); // do not show the block if user is not allowed to viewpages		
+		if (!$canview) {
+            return;
+        }
+        if ($this->content !== null) {
+            return $this->content;
+        }
+			
 		$this->content = new stdClass();
 		
-		
-
 		//$this->content->items[] = html_writer::div($r->firstname . " " . $r->lastname);
 		//$this->content->items[] = html_writer::tag('a', $r->firstname . " " . $r->lastname, [href=>$CFG->wwwroot . '/user/profile.php?id=' . $r->id  ]);
 		//$this->content->items[] = html_writer::tag('a', get_string('expire_task_alert', 'block_alerts_generator') , [href=>$CFG->wwwroot . '/blocks/alerts_generator/expire_task_alert.php?id=' . $context->id ]);
 			
 		//$url= html_writer::tag('a', get_string('expire_task_alert', 'block_alerts_generator') , [href=>$CFG->wwwroot . '/blocks/alerts_generator/expire_task_alert.php?id=' . $context->id ]);
-		$url= $CFG->wwwroot . '/blocks/alerts_generator/expire_task_alert.php?id=' . $COURSE->id;
+		$url= $CFG->wwwroot . '/blocks/alerts_generator/expire_task_alert.php?id=' . $course->id;
 		$this->content->items[] = html_writer::link($url, get_string('expire_task_alert', 'block_alerts_generator'), array('target' => '_blank'));
 				
 		//$this->content->items[] = html_writer::div('anonymous');
@@ -50,8 +52,8 @@ class block_alerts_generator extends block_list {
 		//$this->content->items[] = html_writer::tag('c', 'Teacher', [href=>'Teacher.php']);
 		//$this->content->items[] = html_writer::tag('c', 'Pupils', [href=>'Pupils.php']);
 		
-		//$this->content->icons  = array();
-		//$this->content->footer = '';
+		$this->content->icons  = array();
+		$this->content->footer = '';
 
         return $this->content;
     }
