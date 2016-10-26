@@ -18,7 +18,7 @@
 
 namespace block_alerts_generator\task;
 
-class agtask extends \core\task\scheduled_task {
+class assign_not_sent_task extends \core\task\scheduled_task {
     /**
      * Get a descriptive name for this task (shown to admins).
      *
@@ -33,11 +33,15 @@ class agtask extends \core\task\scheduled_task {
     public function execute() {
         global $CFG, $DB;
 
-		mtrace('my plugin is working');	
+		mtrace('My assign_not_sent_task is working');	
 		
-		$sql = "SELECT asgn_ns.messageid, asgn_ns.id, asgn_ns.assignid FROM {block_alerts_generator_ans} AS asgn_ns
-							INNER JOIN {assign} AS a ON asgn_ns.assignid = a.id 
-							WHERE a.duedate <= UNIX_TIMESTAMP(NOW()) AND asgn_ns.sent = 0";
+		$sql = "SELECT 	asgn_ns.messageid, 
+						asgn_ns.id, 
+						asgn_ns.assignid 
+						FROM {block_alerts_generator_ans} AS asgn_ns
+						INNER JOIN {assign} AS a ON asgn_ns.assignid = a.id 
+						WHERE a.duedate <= UNIX_TIMESTAMP(NOW()) 
+						AND asgn_ns.sent = 0";
 		
 		$result = $DB->get_recordset_sql($sql);
 		
@@ -47,27 +51,32 @@ class agtask extends \core\task\scheduled_task {
 			
 			$record_msg = $DB->get_record('block_alerts_generator_msg', array('id' => $rs->messageid));
 			
-			mtrace("assign id: ". $rs->assignid);
+			//mtrace("assign id: ". $rs->assignid);
 			
 			$context = \context_course::instance($record_msg->courseid);
 			
-			echo ("context ".$context->id);
+			//echo ("context ".$context->id);
 			
-			$query_std = "SELECT u.id FROM {role_assignments} AS a, {user} AS u 
-							WHERE contextid = ". $context->id . " AND roleid = 5 AND a.userid=u.id 
-							AND u.deleted = 0 AND u.suspended = 0 AND a.userid NOT IN( SELECT userid FROM {assign_submission} 
-							WHERE assignment = ".$rs->assignid. " )";
+			$query_std = 	"SELECT u.id 
+								FROM {role_assignments} AS a, {user} AS u 
+								WHERE contextid = ". $context->id . " AND roleid = 5 AND a.userid=u.id 
+								AND u.deleted = 0 
+								AND u.suspended = 0 
+								AND a.userid NOT IN( 
+											SELECT userid 
+												FROM {assign_submission} 
+												WHERE assignment = ".$rs->assignid. " )";
 			
 			$students = $DB->get_recordset_sql($query_std);
 					
 			$fromuser = new \stdClass();
 			$fromuser = $DB->get_record('user', array('id' => $record_msg->fromid));  
 						
-			echo '<pre>'; print_r($students); echo '</pre>';
+			//echo '<pre>'; print_r($students); echo '</pre>';
 							
 			foreach ($students   as  $std) { 
 
-				mtrace("student id: ". $std->id);
+				//mtrace("student id: ". $std->id);
 			
 				$touser = new \stdClass();
 				$touser = $DB->get_record('user', array('id' => $std->id)); 					

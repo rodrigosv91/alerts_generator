@@ -18,38 +18,38 @@ require('../../config.php');
 global $DB, $COURSE, $USER;
 
 $course_id = required_param('course_id', PARAM_INT); 
-$assign_id = required_param('assign_id', PARAM_INT);
-$subject = required_param('subject', PARAM_TEXT);
-$messagetext = required_param('texto', PARAM_TEXT);
+$anss_assign_id = required_param('anss_assign_id', PARAM_INT);
 
 /* Access control */
 require_login( $course_id );
 $context = context_course::instance( $course_id );
 require_capability('block/alerts_generator:viewpages', $context);
 
+$id_anss = -1;
 
-$asgn_count = $DB->count_records('block_alerts_generator_ans', array('assignid' => $assign_id, 'sent' => 0));
+$asgn_count = $DB->count_records('block_alerts_generator_ans_s', array('assignid' => $anss_assign_id, 'sent' => 0));
 
 /* */
 if($asgn_count==0){
+
+
 	$recordmsg = new stdClass();
 	$recordmsg->fromid = $USER->id;
-	$recordmsg->subject = $subject;
-	$recordmsg->message = $messagetext;
+	$recordmsg->subject = "";
+	$recordmsg->message = "";
 	$recordmsg->courseid = $course_id;
 	$messageid = $DB->insert_record('block_alerts_generator_msg', $recordmsg, true);
 
-
 	$record_asgn_not_sent = new stdClass();
-	$record_asgn_not_sent->assignid = $assign_id;
+	$record_asgn_not_sent->assignid = $anss_assign_id;
 	$record_asgn_not_sent->messageid = $messageid;
 	$record_asgn_not_sent->sent = 0;
 
-	$id_ans = $DB->insert_record('block_alerts_generator_ans', $record_asgn_not_sent, true);
+	$id_anss = $DB->insert_record('block_alerts_generator_ans_s', $record_asgn_not_sent, true);
 }
 
 header('Content-type: application/json');
-$mensagem = array('asgn_count' => $asgn_count);
+$mensagem = array('asgn_count' => $asgn_count, 'id_anss' => $id_anss );
 
 //$mensagem =  $asgn_count;
 //$mensagem = "ok";

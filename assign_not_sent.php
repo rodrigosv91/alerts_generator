@@ -25,12 +25,18 @@ require_capability('block/alerts_generator:viewpages', $context);
  
 
 //Search not overdue assigns 	
-$query = 'SELECT id, name, duedate FROM {assign} 
-			WHERE course = ' . $course_id . ' AND duedate > UNIX_TIMESTAMP(NOW())  
-			AND id  NOT IN(
-				SELECT distinct(assignid) from {block_alerts_generator_ans}
-					WHERE sent = 0 
-			) ORDER BY name'; 		
+$query = 'SELECT 	id, 
+					name, 
+					duedate 
+					FROM {assign} 
+					WHERE course = ' . $course_id . ' 
+					AND duedate > UNIX_TIMESTAMP(NOW())  
+					AND id  NOT IN(
+								SELECT distinct(assignid) 
+								FROM {block_alerts_generator_ans}
+									WHERE sent = 0 
+								) ORDER BY name'; 	
+								
 $result = $DB->get_recordset_sql( $query );
 
 ?>
@@ -39,17 +45,19 @@ $result = $DB->get_recordset_sql( $query );
 <html>
     <head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>Assign Not Sent</title>
+		<title><?php echo get_string('assign_not_sent_alert', 'block_alerts_generator');?></title>
 		<link rel="stylesheet" href="externalref/jquery-ui-1.12.1/jquery-ui.css">
 		<script src="externalref/jquery-1.12.4.js"></script> 
 		<script src="externalref/jquery-ui-1.12.1/jquery-ui.js"></script>
 	</head>
-    <body>	 
+    <body>
+		<?php 
+			$PAGE->set_url('/assign_not_sent.php');
+			$PAGE->set_heading($COURSE->fullname);
+			echo $OUTPUT->header(); 		
+		?>
+	
 		<style>
-			.warning{      
-				border: 1px solid red;
-			} 
-			
 			body {
 				color: #333333;
 				/*margin: 1em 0; */
@@ -61,6 +69,32 @@ $result = $DB->get_recordset_sql( $query );
 				
 			.ui-widget { font-size: 12px; } 
 	
+			.container_body_ag{			
+				text-align:center;
+				margin: auto;
+				margin-top: 3em;
+				width: 750px; /*
+				height: 230px;			 
+				padding: 20px 20px 0px 20px;				
+				border: 2px solid;
+				border-radius: 25px;  	 */		
+			}
+			
+			.no_results{	
+				margin: auto;	
+				margin-top: 3em; 
+				margin-bottom: 3em; 
+			}
+								
+			.footer_page_link{
+				margin-top: 3em; 
+				margin-bottom: 2em;
+			}
+			
+			.asn_form{
+				margin-top: 3em; 
+			}
+			
 		</style>
 		
 	
@@ -78,6 +112,7 @@ $result = $DB->get_recordset_sql( $query );
 			$( ".dialog" ).dialog({
 				autoOpen: false,
 				width: 450,
+				modal: true,
 				buttons: [
 					{
 						text: "Ok",
@@ -111,8 +146,9 @@ $result = $DB->get_recordset_sql( $query );
 										// Do something with the result
 										posting.done(function( data ) {
 											
-											if(data.asgn_count!=0){
-												alert("Alerta para esta tarefa já cadastrado.");
+											if(data.asgn_count!=0){												
+												alert("<?php echo get_string('alert_already_scheduled', 'block_alerts_generator');?>");
+												//alert("Alerta para esta tarefa já cadastrado.");
 											}else{
 												if(data.asgn_count==0){																					
 													alert("<?php echo get_string('scheduled_alert', 'block_alerts_generator');?>");
@@ -163,9 +199,13 @@ $result = $DB->get_recordset_sql( $query );
 		});
 		</script>
 		
+		<div class="container_body_ag">
+		
+		<h2><?php echo get_string('assign_not_sent_alert', 'block_alerts_generator');?></h2>
+		
 		<?php if($result->valid()): ?>
 		
-		<div id="form1">
+		<div id="form1" class="asn_form">
 		<form action="schedule_assign_not_sent.php" method="post" name="usrform">	 
 			<p> 
 				Se aluno não enviar tarefa
@@ -187,16 +227,23 @@ $result = $DB->get_recordset_sql( $query );
 			</div>
 		</form> 
 		</div>
-				
-		<p><a href="show_assign_not_sent.php?id=<?php echo $course_id;?>" class="button">Editar/Excluir Alertas Cadastrados</a></p>
-		
+		<div class="footer_page_link">			
+			<p><a href="show_assign_not_sent.php?id=<?php echo $course_id;?>" class="">Editar/Excluir Alertas Cadastrados</a></p>
+		</div>
 		<?php else:  ?>
 	
-		<div><p>Não há tarefas disponiveis</p></div>
-		<p><a href="show_assign_not_sent.php?id=<?php echo $course_id;?>" class="button">Editar/Excluir Alertas Cadastrados</a></p>
+		<div class="no_results"><p>Não há tarefas disponiveis</p></div>
+		<div class="footer_page_link">
+			<p><a href="show_assign_not_sent.php?id=<?php echo $course_id;?>" class="">Editar/Excluir Alertas Cadastrados</a></p>
+		</div>
+		<?php endif;  ?>
 		
-		<?php endif;  ?>	
-	
-	<?php $result->close();?>
+		</div>
+		
+		<?php 
+		$result->close();
+		echo $OUTPUT->footer();
+		
+		?>	
 	</body>
 </html>

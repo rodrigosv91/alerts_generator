@@ -15,46 +15,48 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 require('../../config.php');
-global $DB, $COURSE, $USER;
+global $DB, $USER;
 
 $course_id = required_param('course_id', PARAM_INT); 
-$assign_id = required_param('assign_id', PARAM_INT);
-$subject = required_param('subject', PARAM_TEXT);
-$messagetext = required_param('texto', PARAM_TEXT);
+$days = required_param('days', PARAM_INT);
+
+$absence_time =  $days*86400;
 
 /* Access control */
 require_login( $course_id );
 $context = context_course::instance( $course_id );
 require_capability('block/alerts_generator:viewpages', $context);
 
+//$msg = $DB->get_record('block_alerts_generator_msg', array('courseid' => $course_id));
+//$abs_count = $DB->count_records('block_alerts_generator_msg', array('messageid' => $msg->id));
 
-$asgn_count = $DB->count_records('block_alerts_generator_ans', array('assignid' => $assign_id, 'sent' => 0));
 
-/* */
-if($asgn_count==0){
+
+$sql = "SELECT COUNT(*) FROM {block_alerts_generator_msg} msg 
+			WHERE msg.courseid = :courseid 
+				AND msg.id IN ( 
+					SELECT abs.messageid FROM {block_alerts_generator_abs_s} abs)";
+		
+$abs_count = $DB->count_records_sql($sql, array('courseid' => $course_id));
+
+if($abs_count==0){
 	$recordmsg = new stdClass();
 	$recordmsg->fromid = $USER->id;
-	$recordmsg->subject = $subject;
-	$recordmsg->message = $messagetext;
+	$recordmsg->subject = "";
+	$recordmsg->message = "";
 	$recordmsg->courseid = $course_id;
 	$messageid = $DB->insert_record('block_alerts_generator_msg', $recordmsg, true);
 
-
-	$record_asgn_not_sent = new stdClass();
-	$record_asgn_not_sent->assignid = $assign_id;
-	$record_asgn_not_sent->messageid = $messageid;
-	$record_asgn_not_sent->sent = 0;
-
-	$id_ans = $DB->insert_record('block_alerts_generator_ans', $record_asgn_not_sent, true);
+	$record_absence = new stdClass();
+	$record_absence->messageid = $messageid;
+	$record_absence->absencetime = $absence_time;
+	$record_absence->alertstatus = 1;
+	$db_result = $DB->insert_record('block_alerts_generator_abs_s', $record_absence, true);
 }
 
-header('Content-type: application/json');
-$mensagem = array('asgn_count' => $asgn_count);
 
-//$mensagem =  $asgn_count;
-//$mensagem = "ok";
+header('Content-type: application/json');
+$mensagem = array('db_result' => $db_result, 'abs_count' => $abs_count ,'msg_id' => $messageid);
 echo json_encode($mensagem);
 
 ?>
-
- 

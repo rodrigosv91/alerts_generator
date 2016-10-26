@@ -19,7 +19,7 @@
 defined('MOODLE_INTERNAL') || die();
 $tasks = array(
     array(
-        'classname' => 'block_alerts_generator\task\agtask',
+        'classname' => 'block_alerts_generator\task\assign_expiration_task',
         'blocking' => 0,
         'minute' => '*',
         'hour' => '*',
@@ -27,5 +27,45 @@ $tasks = array(
         'month' => '*',
         'dayofweek' => '*'
         //, 'disabled' => 1
+    ),
+	 array(
+        'classname' => 'block_alerts_generator\task\assign_not_sent_task',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+        
+    ),
+	 array(
+        'classname' => 'block_alerts_generator\task\absence_alert_task',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+        
+    ),
+	 array(
+        'classname' => 'block_alerts_generator\task\assign_not_sent_supervisors_task',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+        
+    ),
+	 array(
+        'classname' => 'block_alerts_generator\task\absence_alert_supervisors_task',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+        
     )
 );

@@ -25,7 +25,12 @@ require_capability('block/alerts_generator:viewpages', $context);
  
 
 //Search not overdue assigns 	
-$query = 'SELECT id, name, duedate FROM {assign} WHERE course =' . $course_id . ' AND duedate > UNIX_TIMESTAMP(NOW()) ORDER BY name'; 		
+$query = 'SELECT 	id, 
+					name, 
+					duedate FROM {assign} 
+					WHERE course =' . $course_id . ' 
+					AND duedate > UNIX_TIMESTAMP(NOW()) 
+					ORDER BY name'; 		
 $result = $DB->get_recordset_sql( $query );
 
 /** 
@@ -74,7 +79,7 @@ $event->trigger();
 <html>
     <head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>TESTE</title>
+		<title><?php echo get_string('assign_expiration_alert', 'block_alerts_generator');?></title>
 		<!--  
 		<link rel="stylesheet" href="externalref/jquery-ui-1.11.4/jquery-ui.css"> 
 		<script src="externalref/jquery-ui-1.11.4/jquery-ui.js"></script>
@@ -92,6 +97,15 @@ $event->trigger();
 		<script src="externalref/jquery-ui-1.12.1/jquery-ui.js"></script>
 	</head>
     <body>	 
+		
+		<?php 
+			
+			$url = $CFG->wwwroot . '/blocks/alerts_generator/expire_task_alert.php?id=' . $course_id;
+			$PAGE->set_url($url);
+			$PAGE->set_heading($COURSE->fullname);
+			echo $OUTPUT->header(); 		
+		?>
+	
 		<style>
 			.warning{      
 				border: 1px solid red;
@@ -107,7 +121,40 @@ $event->trigger();
 			input.text, textarea.text { font-family: Arial;  }
 				
 			.ui-widget { font-size: 12px; } 
+			
+			.container_body_ag{
+				text-align:center;
+				width: 850px;				
+				margin: auto; 
+				margin-top: 1em; /*
+				height: 430px;
+				padding: 20px 20px 0px 20px;				
+				border: 2px solid;
+				border-radius: 25px;   */		
+			}
+			
+			.no_results{				
+				margin: auto;	
+				margin-top: 4em; 
+				margin-bottom: 2em; 
+			}
+			
+			.footer_page_link{
+				margin-top: 1em; 
+				margin-bottom: 2em;
+			}
+			
+			.exp_form{
+				margin-top: 2em; 
+			}
+			.dialog_confirm_redirect{
+				postion:fixed;
+
+			}
+
+			
 	
+			
 		</style>
 		
 	
@@ -159,13 +206,17 @@ $event->trigger();
 																			
 									// Do something with the result
 									posting.done(function( data ) {
-										//alert(data);
-										if(data){																					
-											alert("<?php echo get_string('scheduled_alert', 'block_alerts_generator');?>");
-											//alert("Alerta Cadastrado");									
+										
+										if( data.ag_assign > 0 && data.msg_id > 0 ){																					
+											//alert("<?php echo get_string('scheduled_alert', 'block_alerts_generator');?>");
+														
+											$( '.dialog_confirm_redirect' ).dialog( "open" );
+
+														
 										} else {
-											alert("<?php echo get_string('not_scheduled_alert', 'block_alerts_generator');?>");
-											//alert("Alerta Não Cadastrado");
+											//alert("<?php echo get_string('not_scheduled_alert', 'block_alerts_generator');?>");
+											$( '.dialog_confirm_not_scheduled_alert' ).dialog( "open" );
+											
 										}
 									});											
 								}
@@ -179,9 +230,51 @@ $event->trigger();
 				event.preventDefault();
 			});
 			
-			$( ".dialog" ).dialog({
+			
+			$( ".dialog_confirm_not_scheduled_alert" ).dialog({
+				autoOpen: false,
+				width: 200,
+				modal: true,
+				resizable: false,
+				buttons: [
+					{
+						text: "Ok",
+						click: function() {
+							$( this ).dialog( "close" );
+						}
+					}
+				]
+			});
+			
+			
+			$( ".dialog_confirm_redirect" ).dialog({
 				autoOpen: false,
 				width: 450,
+				modal: true,
+				resizable: false,
+				buttons: [
+					{
+						text: "Sim",
+						click: function() {
+							$( this ).dialog( "close" );
+						}
+					},
+					{
+						text: "Não, Verificar alertas cadastrados",
+						click: function() {
+							//$( this ).dialog( "Voltar para o curso" );
+							window.location.href = <?php echo  json_encode($CFG->wwwroot) ;?> + "/blocks/alerts_generator/show_expire_alerts.php?id=" + <?php echo  json_encode($course_id) ;?>  ;
+						}
+					}
+				]
+			});
+			
+			$(".dialog_confirm_redirect .ui-dialog-titlebar").hide();
+			
+			$( ".dialog" ).dialog({
+				autoOpen: false,
+				width: 300,
+				modal: true,
 				buttons: [
 					{
 						text: "Ok",
@@ -227,7 +320,7 @@ $event->trigger();
 					//$(".subject_paragraph").addClass('warning');	
 					//$(this).parent().prev("p").addClass('ui-state-highlight'); 
 					//$(this).addClass('ui-state-highlight');
-					$(this).addClass('warning');
+					//$(this).addClass('warning');
 
 					
 				}
@@ -236,7 +329,7 @@ $event->trigger();
 					//$(".subject_paragraph").removeClass('warning');
 					//$(this).parent().prev("p").removeClass('ui-state-highlight'); 									
 					//$(this).removeClass('ui-state-highlight');
-					$(this).removeClass('warning');
+					//$(this).removeClass('warning');
 					
 				}	
 			});
@@ -246,7 +339,13 @@ $event->trigger();
 		});
 		</script>
 		
+		<div class="container_body_ag">
+		
+		<h2><?php echo get_string('assign_expiration_alert', 'block_alerts_generator');?></h2>
+		
 		<?php if($result->valid()): ?>
+		
+		<div class="exp_form">
 		
 		<form action="schedule_assign_exp.php" method="post" name="usrform">
 			
@@ -256,9 +355,9 @@ $event->trigger();
 			
 			<p> 
 			Quando faltar <!-- <input value=0 name="days" type="number" min="0" max=""> dias e spinner, jqueryUI-->
-			<input class="spinner" name="days" style="width: 120px"> dias e
+			<input class="spinner" name="days" style="width: 70px; height:14px" value=0> dias e
 			
-			<select class="selectmenu" name="hm_time" value=0>
+			<select class="selectmenu" name="hm_time" >
 				<?php 
 				for($hours=0; $hours<24; $hours++) // the interval for hours is '1'
 					for($mins=0; $mins<60; $mins+=60) // the interval for mins is '60'
@@ -268,17 +367,15 @@ $event->trigger();
 				?>
 			</select>
 			horas		
-			</p>
-					
-			<p> 
+	<!--	</p>				
+			<p> -->
 				para expirar a tarefa 
 				<select class="selectmenu" name="assign_id">
 				<?php foreach ($result  as  $rs) :?>
 					<option value="<?php echo $rs->id; ?>"><?php echo  $rs->name; ?></option>
 					
 				<?php endforeach; ?>
-				</select> 
-			
+				</select> 			
 			</p>
 
 			<p>Enviar mensagem para alunos que não enviaram a tarefa</p>				
@@ -290,7 +387,7 @@ $event->trigger();
 			<input class="button" type="submit"  value="Cadastrar!">
 		
 		</form>
-		
+		</div>
 		
 		
 		<?php //include 'show_expire_alerts.php';?>
@@ -305,15 +402,28 @@ $event->trigger();
 			<textarea rows="4" cols="50" name="message" form="usrform"></textarea><br><br>
 		</div>
 		
-		<p><a href="show_expire_alerts.php?id=<?php echo $course_id;?>" class="button">Editar/Excluir Alertas Cadastrados</a></p>
+		<div class="dialog_confirm_redirect" style="text-align:center"><?php echo get_string('scheduled_alert', 'block_alerts_generator');?>, Cadastrar outro alerta?</div>
+		
+		<div class="dialog_confirm_not_scheduled_alert" style="text-align:center"><?php echo get_string('not_scheduled_alert', 'block_alerts_generator');?></div>
+		
+		<div class="footer_page_link">
+			<p><a href="show_expire_alerts.php?id=<?php echo $course_id;?>" class="">Editar/Excluir Alertas Cadastrados</a></p>
+		</div>
 		
 		<?php else:  ?>
-	
-		<div><p>Não há tarefas disponiveis</p></div>
-		<p><a href="show_expire_alerts.php?id=<?php echo $course_id;?>" class="button">Editar/Excluir Alertas Cadastrados</a></p>
 		
-		<?php endif;  ?>	
-	
-	<?php $result->close();?>
+		<div class="no_results"><p>Não há tarefas disponiveis</p></div>
+		
+		<div class="footer_page_link">
+			<p><a href="show_expire_alerts.php?id=<?php echo $course_id;?>" class="">Editar/Excluir Alertas Cadastrados</a></p>
+		</div>
+		
+		<?php endif;  ?>
+		
+		</div>
+		<?php 
+		$result->close();
+		echo $OUTPUT->footer();
+		?>	
 	</body>
 </html>

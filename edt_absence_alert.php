@@ -1,4 +1,4 @@
-  <?php
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,46 +15,58 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 require('../../config.php');
-global $DB, $COURSE, $USER;
+global $DB;
+
+//$messageid = required_param('id_msg', PARAM_INT); 
+//$absenceid = required_param('id_abs', PARAM_INT); 
+
+$messageid = $SESSION->block_alerts_generator->id_msg_abs; 
+$absenceid = $SESSION->block_alerts_generator->id_abs;
 
 $course_id = required_param('course_id', PARAM_INT); 
-$days = required_param('days', PARAM_INT); 
-$hm_time = required_param('hm_time', PARAM_TEXT); 
-$assign_id = required_param('assign_id', PARAM_INT);
+$days = required_param('days', PARAM_INT);
 $subject = required_param('subject', PARAM_TEXT);
 $messagetext = required_param('texto', PARAM_TEXT);
-$messagehtml = $messagetext;
 
-sscanf($hm_time, "%d:%d:", $hours, $minutes);
-$alert_time =  $days*86400 + $hours * 3600 + $minutes * 60 ;
+$absence_time =  $days*86400;
 
 /* Access control */
 require_login( $course_id );
 $context = context_course::instance( $course_id );
 require_capability('block/alerts_generator:viewpages', $context);
 
-$messageid  = -1;
-$ag_assign = 1; 
+//$abs_count = -1;
+$sql = "SELECT COUNT(*) FROM {block_alerts_generator_msg} msg 
+			WHERE msg.courseid = :courseid 
+				AND msg.id IN ( 
+					SELECT abs.messageid FROM {block_alerts_generator_abs} abs)";
+		
+$abs_count = $DB->count_records_sql($sql, array('courseid' => $course_id));
 
+//echo ("<script>console.log( 'Errinho: ' );</script>");
+
+if($abs_count>0){
+
+/* */
 $recordmsg = new stdClass();
+$recordmsg->id = $messageid;
 $recordmsg->fromid = $USER->id;
 $recordmsg->subject = $subject;
 $recordmsg->message = $messagetext;
 $recordmsg->courseid = $course_id;
-//$recordmsg->timecreated = time();
-$messageid = $DB->insert_record('block_alerts_generator_msg', $recordmsg, true);
+$DB->update_record('block_alerts_generator_msg', $recordmsg, $bulk=false);
 
+$record_absence = new stdClass();
+$record_absence->id = $absenceid;
+$record_absence->messageid = $messageid;
+$record_absence->absencetime = $absence_time;	
 
-$recordassign = new stdClass();
-$recordassign->assignid = $assign_id;
-$recordassign->messageid = $messageid;
-$recordassign->alerttime = $alert_time;
-$recordassign->sent = 0;
-$ag_assign = $DB->insert_record('block_alerts_generator_assig', $recordassign, true);
+$db_result = $DB->update_record('block_alerts_generator_abs', $record_absence, $bulk=false);
 
-
+}
 header('Content-type: application/json');
-$mensagem = array('ag_assign' => $ag_assign, 'msg_id' => $messageid );
+
+$mensagem = array( 'db_result' => $db_result, 'abs_count' => $abs_count, 'msg_id' => $messageid, 'abs_id' => $absenceid );
 echo json_encode($mensagem);
 
 ?>
