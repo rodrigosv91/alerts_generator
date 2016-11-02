@@ -52,22 +52,24 @@ $result = $DB->get_recordset_sql( $query );
 	</head>
     <body>
 		<?php 
-			$PAGE->set_url('/assign_not_sent.php');
+			
+			$url = $CFG->wwwroot . '/blocks/alerts_generator/assign_not_sent.php?id=' . $course_id;
+			$PAGE->set_url($url);
 			$PAGE->set_heading($COURSE->fullname);
 			echo $OUTPUT->header(); 		
 		?>
 	
 		<style>
-			body {
+			body {/*
 				color: #333333;
-				/*margin: 1em 0; */
-				font-family: "Trebuchet MS", Tahoma, Verdana, Arial, sans-serif; 
+				margin: 1em 0;
+				font-family: "Trebuchet MS", Tahoma, Verdana, Arial, sans-serif;   */
 				
 			}
 
-			input.text, textarea.text { font-family: Arial;  }
+			input.text, textarea.text { /* font-family: Arial;  */ }
 				
-			.ui-widget { font-size: 12px; } 
+			.ui-widget { /* font-size: 12px; */} 
 	
 			.container_body_ag{			
 				text-align:center;
@@ -196,6 +198,8 @@ $result = $DB->get_recordset_sql( $query );
 
 			$( ".button" ).button();
 			//$( "#accordion" ).accordion();
+			
+			$( ".select_assign" ).selectmenu( "option", "width", 190 );
 		});
 		</script>
 		
@@ -209,7 +213,7 @@ $result = $DB->get_recordset_sql( $query );
 		<form action="schedule_assign_not_sent.php" method="post" name="usrform">	 
 			<p> 
 				Se aluno não enviar tarefa
-				<select id="assign_id" class="selectmenu" name="assign_id">
+				<select id="assign_id" class="selectmenu select_assign" name="assign_id">
 				<?php foreach ($result  as  $rs) :?>
 					<option value="<?php echo $rs->id; ?>"><?php echo  $rs->name; ?></option>				
 				<?php endforeach; ?>

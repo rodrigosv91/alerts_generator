@@ -27,6 +27,8 @@ $query = 'SELECT 	abs.id as absid,
 					abs.messageid, 
 					abs.absencetime,
 					abs.alertstatus, 
+					abs.begin_date, 
+					abs.end_date, 
 					msg.id as msgid, 
 					msg.fromid, 
 					msg.courseid
@@ -36,6 +38,17 @@ $query = 'SELECT 	abs.id as absid,
 					AND msg.courseid = :courseid ' ; 	
 					
 $result = $DB->get_recordset_sql( $query , array('courseid' => $course_id), 0, 1);
+
+$abs_users_count = $DB->count_records('block_alerts_generator_abs_z', array('courseid' => $course_id));
+
+$str = "Sun Oct 30 2016 00:00:00 GMT-0200 (Hora oficial do Brasil)";
+//echo (substr($str, 0, strpos($str, 'GMT')+8));
+//$data = DateTime::createFromFormat("D M d Y H:i:s T", substr($str, 0, strpos($str, 'GMT')+8));//33
+//echo (" data ". $data->format('D M d Y H:i:s T') ); 
+//echo ( " timestamp " . $data->getTimestamp() );
+
+//echo ( " str2 " . strtotime( '1991') );
+
 
 //print_r($result);
 
@@ -56,7 +69,9 @@ $result = $DB->get_recordset_sql( $query , array('courseid' => $course_id), 0, 1
 		
 		<!--  <div class="container_abs_alert">  -->
 		<?php 
-			$PAGE->set_url('/absence_alert.php');
+			
+			$url = $CFG->wwwroot . '/blocks/alerts_generator/absence_alert_spvrs.php?id=' . $course_id;
+			$PAGE->set_url($url);
 			$PAGE->set_heading($COURSE->fullname);
 			echo $OUTPUT->header(); 
 		
@@ -76,7 +91,7 @@ $result = $DB->get_recordset_sql( $query , array('courseid' => $course_id), 0, 1
 
 			input.text, textarea.text { font-family: Arial;  }
 				
-			.ui-widget { font-size: 12px; } 
+			.ui-widget { /* font-size: 12px; */ } 
 			
 
 						
@@ -87,7 +102,7 @@ $result = $DB->get_recordset_sql( $query , array('courseid' => $course_id), 0, 1
 			
 			.container_body_ag{
 				text-align:center;
-				width: 750px;				
+				width: 1000px;				
 				margin: auto; 
 				margin-top: 1em;  /*
 				height: 250px;
@@ -107,33 +122,84 @@ $result = $DB->get_recordset_sql( $query , array('courseid' => $course_id), 0, 1
 			
 			.deletAlert{
 				margin-top: 1em; 
+			
 			}
 			
 			.status_alert{
 				/* */ width: 14em; 			
 				margin:auto;
 				margin-top: 1em;
-				margin-bottom: 2em; 				
+				margin-bottom: 2em; 	
+				
+				display: none;
+				visibility: hidden;
 			}
+			
+			.execution_date_alert{
+				/* */ width: 28em; 			
+				margin:auto;
+				margin-top: 1em;
+				margin-bottom: 2em; 
+				
+				
+				
+			}		
+			
+			.ui-datepicker-trigger { margin-left:0.2em; width: 1.5em; }
+	
 		</style>
 		
 	
 		<script type="text/javascript">
 		$(document).ready(function(){
 			
+			$( ".abs_form" ).find("input[name='from_date']").val( null);
+			$( ".abs_form" ).find("input[name='to_date']").val( null );
+			
 			if(<?php echo( ($result->valid())==1 ? 1 : 0) ;?>){
 				var abs_absencetime = $('.prop_alert').find("input:hidden[name='abs_absencetime']").val();
 				var days = Math.floor(abs_absencetime/86400);
 				$( ".abs_form" ).find("input[name='days']").val(days);
+				
+				var abs_begin_date = $('.prop_alert').find("input:hidden[name='abs_begin_date']").val();
+				var abs_end_date = $('.prop_alert').find("input:hidden[name='abs_end_date']").val();
+				
+				
+				if( abs_begin_date ){
+					abs_begin_date = getformatedDate(abs_begin_date);
+				}
+				if( abs_end_date ){
+					abs_end_date = getformatedDate(abs_end_date);
+				}
+				
+				$( ".abs_form" ).find("input[name='from_date']").val( abs_begin_date);
+				$( ".abs_form" ).find("input[name='to_date']").val( abs_end_date );
+				//$( ".input_to_date" ).datepicker('setDate', abs_begin_date);			
 			}
+			
 			$( ".saveAlert" ).click(function( event ) {
+							
+				var from_date = $(".input_from_date").datepicker('getDate') ;
+				var to_date = $(".input_to_date").datepicker('getDate') ; 				 
+				
+				//var from_date2 = $('.input_from_date').datepicker({ dateFormat: 'dd-mm-yy' }).val();
+				//var to_date2 = $('.input_to_date').datepicker({ dateFormat: 'dd-mm-yy' }).val();
+				
+				if($.trim(to_date) != '' && $.trim(to_date) != null){								
+					to_date.setHours(23);
+					to_date.setMinutes(59);
+					to_date.setSeconds(59);					
+				}
+				
+				//alert(to_date);
+
 				
 				var course_id  = <?php echo json_encode($course_id);?>; 
 				days = $(".abs_form").find( "input[name='days']" ).val();
  
 				url = $(".abs_form").find("form[name='usrform']").attr( "action" );		
 				
-				var posting = $.post( url, { course_id: course_id, days: days } );
+				var posting = $.post( url, { course_id: course_id, days: days, from_date : from_date, to_date: to_date  } );
 																					
 				posting.done(function( data ) {
 											
@@ -224,7 +290,113 @@ $result = $DB->get_recordset_sql( $query , array('courseid' => $course_id), 0, 1
 					}						
 				});	
 				}
-			});					
+			});	
+
+			$( ".resetAbsenceUsers" ).click(function( event ){
+				if (confirm('<?php echo get_string('confirmation_message', 'block_alerts_generator');?>')) {
+					
+					var url = 'del_absence_user_spvrs.php';			
+					var posting = $.post( url );
+					
+					posting.done(function( data ) {
+																					
+						if( data.abs_count == 0 ){
+							alert("<?php echo get_string('absence_users_reseted', 'block_alerts_generator');?>");					
+							//location.reload();	
+						}else{
+							//if( data.abs_count > 0 ) // alert not deleted						
+							alert("<?php echo get_string('absence_users_not_reseted', 'block_alerts_generator');?>");							
+						}						
+					});					
+				}
+			});
+			
+			$( ".datepicker" )
+			.attr("placeholder", "dd-mm-yyyy")
+			.change(function(){
+					$(this).datepicker('setDate', $(this).datepicker('getDate'));
+			  })
+			.datepicker({ 	
+							dateFormat: "dd/mm/yy",
+							minDate: 0, 
+							//maxDate: "10Y",
+							changeMonth: true,
+							changeYear: true,
+							
+							showOn: "button",
+							buttonImage: "images/calendar.gif",
+							buttonImageOnly: true,
+							buttonText: "Select date"
+							
+			});
+											
+			//datepicker validation		 
+
+			var dateFormat = "dd/mm/yy", 
+			min_date  = new Date(),
+			from = $( ".input_from_date" )
+			.attr("placeholder", "dd/mm/yyyy")
+			.datepicker({
+				dateFormat: "dd/mm/yy",
+				//defaultDate: "+1w",
+				changeMonth: true,
+				changeYear: true,
+				//numberOfMonths: 1
+				minDate: min_date,
+				//maxDate: "10Y",	
+				showOn: "both",
+				buttonImage: "images/calendar.gif",
+				buttonImageOnly: true,
+				buttonText: "Select date"
+			})
+			.on( "change", function() {
+				to.datepicker( "option", "minDate", getDate( this ) );
+				from.datepicker('setDate', from.datepicker('getDate'));
+				  
+			}),
+			to = $( ".input_to_date" )
+			.attr("placeholder", "dd/mm/yyyy")
+			.datepicker({
+				dateFormat: "dd/mm/yy",
+				//defaultDate: "+1w",
+				changeMonth: true,
+				changeYear: true,
+				//numberOfMonths: 1
+				minDate: min_date,
+				//maxDate: "10Y",
+				showOn: "both",
+				buttonImage: "images/calendar.gif",
+				buttonImageOnly: true,
+				buttonText: "Select date"
+			})
+			.on( "change", function() {
+				if( getDate( this ) > from.datepicker("option", "minDate") && getDate( this ) > from.datepicker('getDate') ){
+					from.datepicker( "option", "maxDate", getDate( this ) ); 
+				}
+				to.datepicker('setDate', to.datepicker('getDate'));
+			});
+		 
+			function getDate( element ) {
+				var date;
+				try {
+					date = $.datepicker.parseDate( dateFormat, element.value );
+				} catch( error ) {
+				date = null;
+				}
+				return date;
+			}		
+		
+			function getformatedDate( fulltimestamp ) {
+				var date = new Date(fulltimestamp * 1000);
+				var d  = date.getDate();
+				var m = date.getMonth() + 1;
+				var y = date.getFullYear();				
+				var formatedDate =  (d<10?"0":"") + d + "/" + (m<10?"0":"") + m  + "/" + y;
+			 
+				return formatedDate;
+			}
+			
+			$(".ui-datepicker").draggable() ;
 			
 		});
 		</script>
@@ -243,35 +415,66 @@ $result = $DB->get_recordset_sql( $query , array('courseid' => $course_id), 0, 1
 		
 			<p> 
 				Notificar à responsaveis do curso quando alunos se ausentarem por:
-				<input class="spinner " name="days" value="1" style="width: 70px; height:17px;"  >			
-				dia(s) do curso.
-				
-			
-			</p>
-			
-			<button class="saveAlert" type="button" style="margin: 0;" ><?php echo( ($result->valid()==1) ?  'Atualizar Alerta' : 'Criar Alerta') ;?></button> 
+				<input class="spinner " name="days" value="1" style="width: 60px; height:15px;"  >			
+				dia(s) do curso.<!--
+				<button class="saveAlert" type="button" style="margin: 0;" ><?php echo( ($result->valid()==1) ?  'Atualizar Alerta' : 'Criar Alerta') ;?></button> 
+				-->
+	<!--	</p>
 			<?php if($result->valid()): ?>			
 				<button class="deletAlert" type="button" >Deletar Alerta</button>
 			<?php endif; ?>			
-
+	-->
+			
+	<!--	<p>Date: <input type="text" class="datepicker" style="width: 100px; height:18px; margin: 0;"></p> -->
+	 
+			<div class="execution_date_alert" >	
+				<fieldset>
+					<legend>Periodo de execução do alerta: </legend>
+					<span style="white-space:nowrap">
+					
+					<!--<label for="from">From</label>  -->de 
+					<input type="text" class="input_from_date" id="from_date" name="from_date" style="width: 100px; height:18px; margin: 0;">
+					 </span> 
+					<span style="white-space:nowrap">
+					<!-- <label for="to">to</label>  --> até
+					<input type="text" class="input_to_date"  id="to_date" name="to_date" style="width: 100px; height:18px; margin: 0;">
+					 </span> 
+					 
+				</fieldset>
+			</div>
+			
+			<button class="saveAlert" type="button" style="margin: 0;" ><?php echo( ($result->valid()==1) ?  'Atualizar Alerta' : 'Criar Alerta') ;?></button>
+		
+			<?php if($result->valid()): ?>			
+				<button class="deletAlert" type="button" style="margin: 0;" >Deletar Alerta</button>	
+	<!--		<button class="resetAbsenceUsers" type="button" style="margin: 0;" >Reenviar Alertas</button>	-->
+			<?php endif; ?>		
+			
+			<?php if($abs_users_count > 0): ?>	
+				<button class="resetAbsenceUsers" type="button" style="margin: 0;" >Reenviar Alertas</button>
+			<?php endif; ?>
+						
+	<!--	-->
 		</form> 
 		</div>
 		
 		<?php if($result->valid()): ?>
 		
 		<?php 
-			$SESSION->block_alerts_generator = new stdClass;
-			$SESSION->block_alerts_generator->id_abs = 0;
-			$SESSION->block_alerts_generator->id_msg_abs = 0;
-			$SESSION->block_alerts_generator->course_id_abs = 0;
+			$SESSION->block_alerts_generator_spvrs = new stdClass;
+			$SESSION->block_alerts_generator_spvrs->id_abs_spvrs = 0;
+			$SESSION->block_alerts_generator_spvrs->id_msg_abs_spvrs = 0;
+			$SESSION->block_alerts_generator_spvrs->course_id_abs_spvrs = 0;
 			
 		foreach($result as $rs){
-			$SESSION->block_alerts_generator->id_abs = $rs->absid; 
-			$SESSION->block_alerts_generator->id_msg_abs = $rs->msgid; 
-			$SESSION->block_alerts_generator->course_id_abs = $course_id;
+			$SESSION->block_alerts_generator_spvrs->id_abs_spvrs = $rs->absid; 
+			$SESSION->block_alerts_generator_spvrs->id_msg_abs_spvrs = $rs->msgid; 
+			$SESSION->block_alerts_generator_spvrs->course_id_abs_spvrs = $course_id;
 		?>
 		<div class="prop_alert">			
-			<input type="hidden" value="<?php echo $rs->absencetime ;?>" class="abs_absencetime" name="abs_absencetime" />	
+			<input type="hidden" value="<?php echo $rs->absencetime ;?>" class="abs_absencetime" name="abs_absencetime" />
+			<input type="hidden" value="<?php echo $rs->begin_date ;?>" class="abs_begin_date" name="abs_begin_date" />
+			<input type="hidden" value="<?php echo $rs->end_date ;?>" class="abs_end_date" name="abs_end_date" />			
 		</div>
 		
 		<div class="status_alert" >	
@@ -302,6 +505,7 @@ $result = $DB->get_recordset_sql( $query , array('courseid' => $course_id), 0, 1
 		$result->close();
 		//unset($SESSION->block_alerts_generator);
 		echo $OUTPUT->footer();
+		
 		
 		?>
 		

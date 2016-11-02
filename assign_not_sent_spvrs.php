@@ -54,7 +54,9 @@ $result = $DB->get_recordset_sql( $query );
     <body>	
 
 	<?php 
-		$PAGE->set_url('/assign_not_sent_spvrs.php');
+		
+		$url = $CFG->wwwroot . '/blocks/alerts_generator/assign_not_sent_spvrs.php?id=' . $course_id;
+		$PAGE->set_url($url);
 		$PAGE->set_heading($COURSE->fullname);
 		echo $OUTPUT->header(); 
 		
@@ -75,7 +77,7 @@ $result = $DB->get_recordset_sql( $query );
 				text-align:center;
 				width: 750px;
 				margin: auto;
-				margin-top: 1em; /*
+				margin-top: 3em; /*
 				height: 200px;				
 				padding: 20px 20px 0px 20px;				
 				border: 2px solid;
@@ -129,9 +131,9 @@ $result = $DB->get_recordset_sql( $query );
 					
 			});
 						
-			//$( ".selectmenu" ).selectmenu({width: 660});
-
-			//$( ".button" ).button();
+			//$( ".selectmenu" ).selectmenu({width: 200});	
+			//$( ".selectmenu" ).selectmenu({});
+			$( ".button" ).button();
 			
 		});
 		</script>
@@ -145,22 +147,23 @@ $result = $DB->get_recordset_sql( $query );
 		
 		<div class="form_anss">		 
 			<label>Notificar à responsaveis do curso alunos que não enviarem a tarefa:</label>
-			<select class="anss_assign_id" class="selectmenu">
+			<select class="anss_assign_id  selectmenu" >
 				<?php foreach ($result  as  $rs) :?>
 					<option value="<?php echo $rs->id; ?>"><?php echo  $rs->name; ?></option>				
 				<?php endforeach; ?>
 			</select> 
-			<button class="saveAlert" type="button" >Criar Alerta</button> 
+			<!-- <button class="saveAlert " type="button"  style="margin:0px;"  >Criar Alerta</button> -->
+			<button class="saveAlert " type="button">Criar Alerta</button> 
 		</div>	
 		<div class="footer_page_link">
-			<p><a href="show_assign_not_sent_spvrs.php?id=<?php echo $course_id;?>" class="button">Editar/Excluir Alertas Cadastrados</a></p>
+			<p><a href="show_assign_not_sent_spvrs.php?id=<?php echo $course_id;?>" class="">Editar/Excluir Alertas Cadastrados</a></p>
 		</div>
 		<?php else:  ?>
 	
 		<div class="no_results"><p>Não há tarefas disponiveis</p></div>
 		
 		<div class="footer_page_link">
-			<p><a href="show_assign_not_sent_spvrs.php?id=<?php echo $course_id;?>" class="button">Editar/Excluir Alertas Cadastrados</a></p>
+			<p><a href="show_assign_not_sent_spvrs.php?id=<?php echo $course_id;?>" class="">Editar/Excluir Alertas Cadastrados</a></p>
 		</div>		
 		
 		<?php endif;  ?>

@@ -53,18 +53,20 @@ $result = $DB->get_recordset_sql( $query );
 	</head>	
 	<body>	
 		<?php 
-			$PAGE->set_url('/show_assign_not_sent.php');
+			
+			$url = $CFG->wwwroot . '/blocks/alerts_generator/show_assign_not_sent.php?id=' . $course_id;
+			$PAGE->set_url($url);
 			$PAGE->set_heading($COURSE->fullname);
 			echo $OUTPUT->header(); 		
 		?>
 	
 		<style>
-			body {
+			body {/*
 				color: #333;
-				font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif; 
+				font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif; */
 			}
 			
-			.ui-widget { font-size: 12px; }
+			.ui-widget { /* font-size: 12px; */ }
 			
 			.container_body_ag{			
 				text-align:center;

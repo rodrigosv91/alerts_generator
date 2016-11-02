@@ -20,7 +20,31 @@ global $DB, $USER;
 $course_id = required_param('course_id', PARAM_INT); 
 $days = required_param('days', PARAM_INT);
 
+$begin_date_str = required_param('from_date', PARAM_TEXT);
+$end_date_str = required_param('to_date', PARAM_TEXT);
+
 $absence_time =  $days*86400;
+
+
+if($end_date_str != null){
+	//$end_dateTime = DateTime::createFromFormat("D M d Y H:i:s T", substr($end_date_str, 0,33));
+	//$end_dateTime = DateTime::createFromFormat("D M d Y H:i:s T", substr($end_date_str, 0, strpos($end_date_str, 'GMT')+8));	
+	//$end_date = $end_dateTime->getTimestamp();
+	
+	$end_date = strtotime( substr($end_date_str, 0, 33));
+}else{
+	$end_date = null;
+}
+
+if($begin_date_str != null){
+	//$begin_dateTime = DateTime::createFromFormat("D M d Y H:i:s T", substr($begin_date_str, 0, strpos($begin_date_str, 'GMT')+8));	
+	//$begin_date = $begin_dateTime->getTimestamp();
+	
+	$begin_date = strtotime( substr($begin_date_str, 0, 33));
+}else{
+	$begin_date = null;
+}
+	
 
 /* Access control */
 require_login( $course_id );
@@ -50,7 +74,9 @@ if($abs_count==0){
 	$record_absence = new stdClass();
 	$record_absence->messageid = $messageid;
 	$record_absence->absencetime = $absence_time;
-	$record_absence->alertstatus = 1;
+	$record_absence->begin_date = $begin_date;
+	$record_absence->end_date = $end_date;
+	$record_absence->alertstatus = 1; 
 	$db_result = $DB->insert_record('block_alerts_generator_abs_s', $record_absence, true);
 }
 

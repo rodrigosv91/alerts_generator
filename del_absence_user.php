@@ -17,41 +17,32 @@
 require('../../config.php');
 global $DB;
 
-$messageid = $SESSION->block_alerts_generator->id_msg_abs; 
-$absenceid = $SESSION->block_alerts_generator->id_abs; 
+//$absenceid = $SESSION->block_alerts_generator->id_abs; 
 $course_id = $SESSION->block_alerts_generator->course_id_abs;
-
-//$course_id = required_param('course_id', PARAM_INT); 
 
 /* Access control */
 require_login( $course_id );
 $context = context_course::instance( $course_id );
 require_capability('block/alerts_generator:viewpages', $context);
 
-//$abs_count = -1;
-//$msg_count = -1;	
+$abs_count = $DB->count_records('block_alerts_generator_abs_u', array('courseid' => $course_id));
 
-$abs_count = $DB->count_records('block_alerts_generator_abs', array('id' => $absenceid));
-$msg_count = $DB->count_records('block_alerts_generator_msg', array('id' => $messageid, 'courseid' => $course_id));
-
-if($abs_count > 0 && $msg_count > 0 ){
-
-	$DB->delete_records('block_alerts_generator_abs', array('id' => $absenceid));
-	$DB->delete_records('block_alerts_generator_msg', array('id' => $messageid));
+if($abs_count > 0 ){
 	$DB->delete_records('block_alerts_generator_abs_u', array('courseid' => $course_id));
 	
-	$abs_count = $DB->count_records('block_alerts_generator_abs', array('id' => $absenceid));
-	$msg_count = $DB->count_records('block_alerts_generator_msg', array('id' => $messageid, 'courseid' => $course_id));
-
+	$abs_count = $DB->count_records('block_alerts_generator_abs_u', array('courseid' => $course_id));
 }
 else{
-	$abs_count = -1;
-	$msg_count = -1;	
+	if($abs_count == 0){
+			//nothing to delete
+	}else{
+		$abs_count = -1;
+	}
 }
 
 header('Content-type: application/json');
 
-$mensagem = array( 'abs_count' => $abs_count, 'msg_count' => $msg_count ); //, 'msg_id' => $messageid, 'abs_id' => $absenceid
+$mensagem = array( 'abs_count' => $abs_count); //, 'msg_id' => $messageid, 'abs_id' => $absenceid
 echo json_encode($mensagem);
 
 ?>

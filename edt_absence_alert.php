@@ -28,7 +28,22 @@ $days = required_param('days', PARAM_INT);
 $subject = required_param('subject', PARAM_TEXT);
 $messagetext = required_param('texto', PARAM_TEXT);
 
+$begin_date_str = required_param('from_date', PARAM_TEXT);
+$end_date_str = required_param('to_date', PARAM_TEXT);
+
 $absence_time =  $days*86400;
+
+if($end_date_str != null){
+	$end_date = strtotime( substr($end_date_str, 0, 33));
+}else{
+	$end_date = null;
+}
+
+if($begin_date_str != null){
+	$begin_date = strtotime( substr($begin_date_str, 0, 33));
+}else{
+	$begin_date = null;
+}
 
 /* Access control */
 require_login( $course_id );
@@ -59,7 +74,9 @@ $DB->update_record('block_alerts_generator_msg', $recordmsg, $bulk=false);
 $record_absence = new stdClass();
 $record_absence->id = $absenceid;
 $record_absence->messageid = $messageid;
-$record_absence->absencetime = $absence_time;	
+$record_absence->absencetime = $absence_time;
+$record_absence->begin_date = $begin_date;
+$record_absence->end_date = $end_date;	
 
 $db_result = $DB->update_record('block_alerts_generator_abs', $record_absence, $bulk=false);
 

@@ -20,7 +20,7 @@ global $DB;
 
 $course_id = required_param('course_id', PARAM_INT); 
 $action = required_param('action', PARAM_INT);
-$absenceid = $SESSION->block_alerts_generator->id_abs;
+$absenceid = $SESSION->block_alerts_generator_spvrs->id_abs_spvrs;
 
 $result = -1;
 

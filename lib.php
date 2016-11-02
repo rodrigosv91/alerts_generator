@@ -14,39 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-function block_alerts_generator_activate_absence_alert($absenceid) {
-
-    $record_absence = new stdClass();
-	$record_absence->id = $absenceid;
-	$record_absence->alertstatus = 1;
-	$result = $DB->update_record('block_alerts_generator_abs', $record_absence, $bulk=false);
+/*
+			
+function getformatedDate( fulltimestamp ) {
+	var date = new Date(fulltimestamp * 1000);
+	var d  = date.getDate();
+	var m = date.getMonth() + 1;
+	var y = date.getFullYear();		
 	
-    return $result;
+	var formatedDate =  (d<10?"0":"") + d + "/" + (m<10?"0":"") + m  + "/" + y;
+			 
+	return formatedDate;
 }
-
-function block_alerts_generator_deactivate_absence_alert($absenceid) {
-
-    $record_absence = new stdClass();
-	$record_absence->id = $absenceid;
-	$record_absence->alertstatus = 0;
-	$result = $DB->update_record('block_alerts_generator_abs', $record_absence, $bulk=false);
-	
-    return $result;
-}
-
-function block_alerts_generator_get_teachers($course) {
-    $teachers = array();
-    $context = \context_course::instance($course);
-    $allteachers = get_enrolled_users($context, 'block/alerts_generator:viewpages', 0,
-                    'u.id, u.firstname, u.lastname, u.email, u.suspended, u.deleted', 'firstname, lastname');
-    foreach ($allteachers as $teacher) {
-        if ($teacher->suspended == 0 && $teacher->deleted == 0) {
-            $teachers[] = $teacher;
-        }
-    }
-    return($teachers);
-}
+*/
 
 
-
-
+?>

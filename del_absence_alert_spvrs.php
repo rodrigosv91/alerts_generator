@@ -17,9 +17,9 @@
 require('../../config.php');
 global $DB;
 
-$messageid = $SESSION->block_alerts_generator->id_msg_abs; 
-$absenceid = $SESSION->block_alerts_generator->id_abs; 
-$course_id = $SESSION->block_alerts_generator->course_id_abs;
+$messageid = $SESSION->block_alerts_generator_spvrs->id_msg_abs_spvrs; 
+$absenceid = $SESSION->block_alerts_generator_spvrs->id_abs_spvrs; 
+$course_id = $SESSION->block_alerts_generator_spvrs->course_id_abs_spvrs;
 
 //$course_id = required_param('course_id', PARAM_INT); 
 
@@ -38,6 +38,7 @@ if($abs_count > 0 && $msg_count > 0 ){
 
 	$DB->delete_records('block_alerts_generator_abs_s', array('id' => $absenceid));
 	$DB->delete_records('block_alerts_generator_msg', array('id' => $messageid));
+	$DB->delete_records('block_alerts_generator_abs_z', array('courseid' => $course_id));
 	
 	$abs_count = $DB->count_records('block_alerts_generator_abs_s', array('id' => $absenceid));
 	$msg_count = $DB->count_records('block_alerts_generator_msg', array('id' => $messageid, 'courseid' => $course_id));

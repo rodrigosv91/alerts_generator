@@ -46,7 +46,10 @@ class absence_alert_supervisors_task extends \core\task\scheduled_task {
 						FROM {block_alerts_generator_abs_s} AS abs 
 						INNER JOIN {block_alerts_generator_msg} AS msg ON abs.messageid = msg.id
 						INNER JOIN {course} crs ON crs.id = msg.courseid 
-						AND abs.alertstatus = 1";
+						WHERE (UNIX_TIMESTAMP(NOW())) > abs.begin_date AND (UNIX_TIMESTAMP(NOW())) <= abs.end_date
+						OR (UNIX_TIMESTAMP(NOW())) > abs.begin_date AND abs.end_date IS NULL 
+                        OR abs.begin_date IS NULL AND (UNIX_TIMESTAMP(NOW())) <= abs.end_date 
+                        OR abs.begin_date IS NULL AND abs.begin_date IS NULL";
 		
 		$result = $DB->get_recordset_sql($sql);
 		
@@ -106,8 +109,9 @@ class absence_alert_supervisors_task extends \core\task\scheduled_task {
 			$students_abs = $DB ->get_recordset_sql($students_absSql, $students_absSqlparams); 
 				
 			// update string ->				
-			$subject_msg = get_string('abss_subject', 'block_alerts_generator') . $rs->coursename;	//nos ultimos x dias
-			$text_msg =  get_string('abss_text_msg', 'block_alerts_generator')  . $rs->coursename . ": ";	//nos ultimos x dias	
+			
+			//$text_msg =  get_string('abss_text_msg', 'block_alerts_generator')  . $rs->coursename . ": ";	//nos ultimos x dias
+			$text_msg	= "";		
 			$i = 0;
 			
 			foreach ($students_abs   as  $std) { 
@@ -118,12 +122,13 @@ class absence_alert_supervisors_task extends \core\task\scheduled_task {
 				//$profilelink = '<strong>'. \html_writer::link($url, $fullname, array('target' => '_blank')) . '</strong>';
 				//$text_msg = $text_msg . "<br />" . $profilelink ;
 				//$text_msg = $text_msg . "\r\n" . $fullname ;
-				$text_msg = " " .  $text_msg . " " . $fullname ;
 				
-				if(end($std)){
-					$text_msg = $text_msg . ",";
-				}else{
-					$text_msg = $text_msg . ".";
+				if($i==0){	
+					$text_msg = $text_msg . " " . $fullname ;	
+					
+				}					
+				else{ 
+					$text_msg =  $text_msg . ", " . $fullname ;	
 				}
 				
 				//echo nl2br("Hello, world!\n Hello, world!");							
@@ -137,33 +142,44 @@ class absence_alert_supervisors_task extends \core\task\scheduled_task {
 				$i++;
 			}			
 			
+			$text_msg = $text_msg . ".";
+			
 			$text_msg = nl2br($text_msg);
 			
 			if($i){	
-			
-			$fromuser = new \stdClass();
-			$fromuser = $DB->get_record('user', array('id' => $rs->fromid));
-	
-			/**  */	
-			//get supervisors ans send message
-			$allsupervisors = get_enrolled_users($context, 'block/alerts_generator:viewpages', 0,
-								'u.id, u.firstname, u.lastname, u.email, u.suspended, u.deleted, u.username', 'firstname, lastname');
-								
-			foreach ($allsupervisors as $spvrs) {
-				if ($spvrs->suspended == 0 && $spvrs->deleted == 0) {
-					
-					$touser = $DB->get_record('user', array('id' => $spvrs->id));
-					//$spvrs->mailformat = 1;
-					email_to_user($spvrs, $fromuser, $subject_msg, $text_msg, $text_msg, '', '', true);
-					
-					$ag_dest = new \stdClass();
-					$ag_dest->messageid = $rs->messageid;
-					$ag_dest->toid = $std->id;
-					$ag_dest->timecreated = time();
-					$DB->insert_record('block_alerts_generator_dest', $ag_dest, false);
-								
+				$subject_msg = get_string('abss_subject', 'block_alerts_generator') . $rs->coursename;	//nos ultimos x dias
+				
+				if($i == 1){
+					$text_msg = get_string('abss_text_msg_1', 'block_alerts_generator') .  $rs->coursename . ": " . $text_msg;
 				}
-			}	
+				else{
+					$text_msg = get_string('abss_text_msg_2', 'block_alerts_generator') .  $rs->coursename . ": " . $text_msg;
+				}
+				
+				
+				$fromuser = new \stdClass();
+				$fromuser = $DB->get_record('user', array('id' => $rs->fromid));
+		
+				/**  */	
+				//get supervisors ans send message
+				$allsupervisors = get_enrolled_users($context, 'block/alerts_generator:viewpages', 0,
+									'u.id, u.firstname, u.lastname, u.email, u.suspended, u.deleted, u.username', 'firstname, lastname');
+									
+				foreach ($allsupervisors as $spvrs) {
+					if ($spvrs->suspended == 0 && $spvrs->deleted == 0) {
+						
+						$touser = $DB->get_record('user', array('id' => $spvrs->id));
+						//$spvrs->mailformat = 1;
+						email_to_user($spvrs, $fromuser, $subject_msg, $text_msg, $text_msg, '', '', true);
+						
+						$ag_dest = new \stdClass();
+						$ag_dest->messageid = $rs->messageid;
+						$ag_dest->toid = $spvrs->id;
+						$ag_dest->timecreated = time();
+						$DB->insert_record('block_alerts_generator_dest', $ag_dest, false);
+									
+					}
+				}	
 			
 			}	
 			$students_abs->close();	

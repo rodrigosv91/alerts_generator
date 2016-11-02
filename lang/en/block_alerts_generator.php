@@ -51,6 +51,8 @@ $string['anss_text_msg_2'] = 'The follow students did not send the assign ';
 
 $string['abss_subject'] = 'Students without access in the course: '; 
 $string['abss_text_msg'] = 'The follow student(s) did not accessed the course ';
+$string['abss_text_msg_1'] = 'The follow student did not accessed the course ';
+$string['abss_text_msg_2'] = 'The follow students did not accessed the course ';
 
 $string['assign_expiration_alert'] = 'Assign Expiration Alert'; 
 
@@ -73,4 +75,5 @@ $string['absence_alert_title'] = 'Create/Edit absence alert';
 $string['alert_for_students'] = 'Alerts for students';
 $string['alert_for_teachers'] = 'Alerts for teachers';
 
-
+$string['absence_users_reseted'] = 'List reseted';
+$string['absence_users_not_reseted'] = 'List not reseted';

@@ -56,18 +56,20 @@ $result = $DB->get_recordset_sql( $query );
 	<body>	
 		
 		<?php 
-			$PAGE->set_url('/show_expire_alerts.php');
+			
+			$url = $CFG->wwwroot . '/blocks/alerts_generator/show_expire_alerts.php?id=' . $course_id;
+			$PAGE->set_url($url);
 			$PAGE->set_heading($COURSE->fullname);
 			echo $OUTPUT->header(); 		
 		?>
 	
 		<style>
-			body {
+			body {/*
 				color: #333;
-				font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif; 
+				font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;  */
 			}
 			
-			.ui-widget { font-size: 12px; }
+			.ui-widget { /* */ font-size: 12px; }
 			
 			.container_body_ag{			
 				text-align:center;
@@ -320,14 +322,14 @@ $result = $DB->get_recordset_sql( $query );
 		
 		
 		<div class="footer_page_link">
-			<p><a href="expire_task_alert.php?id=<?php echo $course_id;?>" class="">Inserir alerta</a></p>
+			<p><a href="expire_task_alert.php?id=<?php echo $course_id;?>" class="">Inserir novo alerta</a></p>
 		</div>
 		
 		<?php else:  ?>
 		
 		<div class="no_results"><p>Não há alertas cadastrados</p></div>
 		
-		<p><a href="expire_task_alert.php?id=<?php echo $course_id;?>" class="">Inserir alerta</a></p>
+		<p><a href="expire_task_alert.php?id=<?php echo $course_id;?>" class="">Inserir novo alerta</a></p>
 		
 		<?php endif;  ?>	
 		

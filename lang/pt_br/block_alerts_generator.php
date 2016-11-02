@@ -51,6 +51,8 @@ $string['anss_text_msg_2'] = 'Os seguintes alunos não enviaram a tarefa ';
 
 $string['abss_subject'] = 'Aluno(s) sem acesso em curso: '; 
 $string['abss_text_msg'] = 'O(s) seguinte(s) aluno(s) não acessaram o curso ';
+$string['abss_text_msg_1'] = 'O seguinte aluno não acessou o curso ';
+$string['abss_text_msg_2'] = 'Os seguintes alunos não acessaram o curso ';
 
 $string['assign_expiration_alert'] = 'Alerta de Tarefa Expirando'; 
 
@@ -72,5 +74,8 @@ $string['absence_alert_title'] = 'Criar/editar alerta de ausência';
 
 $string['alert_for_students'] = 'Alertas para Alunos';
 $string['alert_for_teachers'] = 'Alertas para Docentes';
+
+$string['absence_users_reseted'] = 'Lista reiniciada';
+$string['absence_users_not_reseted'] = 'Lista não reiniciada';
 
 

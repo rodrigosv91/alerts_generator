@@ -74,11 +74,13 @@
         <KEY NAME="messageid" TYPE="foreign" FIELDS="messageid" REFTABLE="block_alerts_generator_msg" REFFIELDS="id"/>   
       </KEYS>
     </TABLE>
-	<TABLE NAME="block_alerts_generator_abs" COMMENT="Assigns being watched in a course by block_alerts_generator_absence.">
+	<TABLE NAME="block_alerts_generator_abs" COMMENT="Properties of an absence alert - students.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
 		<FIELD NAME="messageid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Id of the message to be send according to table alerts_generator_msg."/>       	  
 		<FIELD NAME="absencetime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+		<FIELD NAME="begin_date" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+		<FIELD NAME="end_date" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
 		<FIELD NAME="alertstatus" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
@@ -86,11 +88,13 @@
 		<KEY NAME="messageid" TYPE="foreign" FIELDS="messageid" REFTABLE="block_alerts_generator_msg" REFFIELDS="id"/>  
       </KEYS>
     </TABLE>
-	<TABLE NAME="block_alerts_generator_abs_s" COMMENT="Assigns being watched in a course by block_alerts_generator_absence.">
+	<TABLE NAME="block_alerts_generator_abs_s" COMMENT="Properties of an absence alert - supervisors.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
 		<FIELD NAME="messageid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Id of the message to be send according to table alerts_generator_msg."/>       	  
 		<FIELD NAME="absencetime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+		<FIELD NAME="begin_date" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+		<FIELD NAME="end_date" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
 		<FIELD NAME="alertstatus" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

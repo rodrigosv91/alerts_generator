@@ -52,7 +52,9 @@ $result = $DB->get_recordset_sql( $query );
 	<body>	
 	
 		<?php 
-			$PAGE->set_url('/show_assign_not_sent_spvrs.php');
+			
+			$url = $CFG->wwwroot . '/blocks/alerts_generator/show_assign_not_sent_spvrs.php?id=' . $course_id;
+			$PAGE->set_url($url);
 			$PAGE->set_heading($COURSE->fullname);
 			echo $OUTPUT->header(); 
 		

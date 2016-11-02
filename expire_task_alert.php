@@ -111,20 +111,19 @@ $event->trigger();
 				border: 1px solid red;
 			} 
 			
-			body {
+			body {/*
 				color: #333333;
-				/*margin: 1em 0; */
-				font-family: "Trebuchet MS", Tahoma, Verdana, Arial, sans-serif; 
+				font-family: "Trebuchet MS", Tahoma, Verdana, Arial, sans-serif;  */
 				
 			}
 
 			input.text, textarea.text { font-family: Arial;  }
 				
-			.ui-widget { font-size: 12px; } 
+			.ui-widget { /* */ font-size: 12px;  } 
 			
 			.container_body_ag{
 				text-align:center;
-				width: 850px;				
+				width: 900px;				
 				margin: auto; 
 				margin-top: 1em; /*
 				height: 430px;
@@ -140,7 +139,7 @@ $event->trigger();
 			}
 			
 			.footer_page_link{
-				margin-top: 1em; 
+				margin-top: 2em; 
 				margin-bottom: 2em;
 			}
 			
@@ -151,9 +150,18 @@ $event->trigger();
 				postion:fixed;
 
 			}
-
 			
+			.msg_paragraph{
+				margin-top: 2em;
+			}
+			/*
+			.ui-selectmenu-open{
+				max-height: 250px;
+				overflow-y: scroll;
+			}	*/
 	
+			
+			
 			
 		</style>
 		
@@ -273,13 +281,63 @@ $event->trigger();
 			
 			$( ".dialog" ).dialog({
 				autoOpen: false,
-				width: 300,
+				width: 450,
 				modal: true,
 				buttons: [
 					{
-						text: "Ok",
+						text: "Cadastrar",
 						click: function() {
-							$( this ).dialog( "close" );
+							
+							var course_id  = <?php echo json_encode($course_id);?>; 
+							
+							//$(".container_body_ag").find(".exp_form") ,//
+						
+							var $form = $( this ),					
+							subjectval = $form.find( "input[name='subject']" ).val(),
+							textoval = $form.find( "textarea[name='texto']" ).val(),
+							days = $(".exp_form").find( "input[name='days']" ).val(),
+							hm_time = $(".exp_form").find( "select[name='hm_time']" ).val(),
+							assign_id = $(".exp_form").find( "select[name='assign_id']" ).val(),
+							url = $(".exp_form").find("form[name='usrform']").attr( "action" );
+									
+													
+							if( ($.trim(textoval) == '') && ($.trim(subjectval) == '') ){
+								
+								alert('<?php echo get_string('empty_subject_message', 'block_alerts_generator');?>'); 
+								
+							}else{						
+								if($.trim(textoval) == ''){
+									
+									alert('<?php echo get_string('empty_message', 'block_alerts_generator');?>'); 
+								}	
+								else{
+									if($.trim(subjectval) == ''){ 
+										alert('<?php echo get_string('empty_subject', 'block_alerts_generator');?>'); 
+										
+										
+									}else{		
+										var posting = $.post( url, { course_id: course_id, days: days, hm_time: hm_time, assign_id: assign_id,
+														subject: subjectval, texto: textoval } );
+																														
+										posting.done(function( data ) {
+											
+											if( data.ag_assign > 0 && data.msg_id > 0 ){																					
+												//alert("<?php echo get_string('scheduled_alert', 'block_alerts_generator');?>");
+												$( ".dialog" ).dialog("close");
+												$( '.dialog_confirm_redirect' ).dialog( "open" );															
+											} else {
+												//alert("<?php echo get_string('not_scheduled_alert', 'block_alerts_generator');?>");
+												$( ".dialog" ).dialog("close");
+												$( '.dialog_confirm_not_scheduled_alert' ).dialog( "open" );												
+											}
+										});											
+									}
+								}
+								//$( "#dialog" ).dialog( "open" );
+							}
+							
+							
+							//$( this ).dialog( "close" );
 						}
 					},
 					{
@@ -336,6 +394,9 @@ $event->trigger();
 
 			$( ".button" ).button();
 			//$( "#accordion" ).accordion();
+			
+			$( ".select_hm_time" ).selectmenu( "option", "width", 120 );
+			//$( ".select_hm_time" ).selectmenu({ width : $( ".select_hm_time" ).attr("width")})
 		});
 		</script>
 		
@@ -355,9 +416,9 @@ $event->trigger();
 			
 			<p> 
 			Quando faltar <!-- <input value=0 name="days" type="number" min="0" max=""> dias e spinner, jqueryUI-->
-			<input class="spinner" name="days" style="width: 70px; height:14px" value=0> dias e
+			<input class="spinner" name="days" style="width: 70px; height:14px" value=0> dia(s) e
 			
-			<select class="selectmenu" name="hm_time" >
+			<select class="selectmenu select_hm_time" name="hm_time" style="" >
 				<?php 
 				for($hours=0; $hours<24; $hours++) // the interval for hours is '1'
 					for($mins=0; $mins<60; $mins+=60) // the interval for mins is '60'
@@ -366,10 +427,10 @@ $event->trigger();
 								.str_pad($mins,2,'0',STR_PAD_LEFT).'</option>';
 				?>
 			</select>
-			horas		
+			hora(s)		
 	<!--	</p>				
 			<p> -->
-				para expirar a tarefa 
+				para expirar a tarefa:
 				<select class="selectmenu" name="assign_id">
 				<?php foreach ($result  as  $rs) :?>
 					<option value="<?php echo $rs->id; ?>"><?php echo  $rs->name; ?></option>
@@ -377,15 +438,26 @@ $event->trigger();
 				<?php endforeach; ?>
 				</select> 			
 			</p>
+	
+			<p class="msg_paragraph">Enviar mensagem para alunos que não enviaram a tarefa 
+				<a href="#" id="dialog-link" class=" button"><span class="ui-icon ui-icon-newwin"></span>Mensagem</a>
+			</p>
 
-			<p>Enviar mensagem para alunos que não enviaram a tarefa</p>				
-			
-			<p class="subject_paragraph"><?php echo get_string('subject', 'block_alerts_generator');?>:
+			<!-- ui-dialog -->
+			<div id="dialog" class="dialog">
+				<p class="subject_paragraph"><?php echo get_string('subject', 'block_alerts_generator');?>:
+					<input class="input_subject text ui-widget-content ui-corner-all  " type='text' name='subject' form="usrform" >
+				</p>
+					<textarea class="text_message text ui-widget-content ui-corner-all " rows="5" cols="60" name="texto" form="usrform"></textarea><br><br>
+			</div>
+	<!--		
+			<a href="#" id="dialog-link" class=" button"><span class="ui-icon ui-icon-newwin"></span>Mensagem</a>
+			<p class="subject_paragraph"><?php //echo get_string('subject', 'block_alerts_generator');?>:
 				<input class="input_subject text ui-widget-content ui-corner-all  " type='text' name='subject' form="usrform" ></p>
 				<textarea class="text_message text ui-widget-content ui-corner-all " rows="5" cols="60" name="texto" form="usrform"></textarea><br><br>
-			<!-- -->
-			<input class="button" type="submit"  value="Cadastrar!">
-		
+	
+			<input class="button" type="submit"  value="Cadastrar!"> 
+	-->		
 		</form>
 		</div>
 		
@@ -395,12 +467,7 @@ $event->trigger();
 		
 		<!-- <p><a href="#" id="dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>Mensagem</a></p> -->
 		
-		<!-- ui-dialog -->
-		<div id="dialog" class="dialog" title="Dialog Title">
-			<p ><?php echo get_string('subject', 'block_alerts_generator');?>: 
-			<input type='text' name='subject' ></p>
-			<textarea rows="4" cols="50" name="message" form="usrform"></textarea><br><br>
-		</div>
+		
 		
 		<div class="dialog_confirm_redirect" style="text-align:center"><?php echo get_string('scheduled_alert', 'block_alerts_generator');?>, Cadastrar outro alerta?</div>
 		

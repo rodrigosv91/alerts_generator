@@ -46,7 +46,10 @@ class absence_alert_task extends \core\task\scheduled_task {
 						FROM {block_alerts_generator_abs} AS abs 
 						INNER JOIN {block_alerts_generator_msg} AS msg ON abs.messageid = msg.id
 						INNER JOIN {course} crs ON crs.id = msg.courseid 
-						AND abs.alertstatus = 1";
+						WHERE (UNIX_TIMESTAMP(NOW())) > abs.begin_date AND (UNIX_TIMESTAMP(NOW())) <= abs.end_date
+						OR (UNIX_TIMESTAMP(NOW())) > abs.begin_date AND abs.end_date IS NULL 
+                        OR abs.begin_date IS NULL AND (UNIX_TIMESTAMP(NOW())) <= abs.end_date 
+                        OR abs.begin_date IS NULL AND abs.begin_date IS NULL";
 		
 		$result = $DB->get_recordset_sql($sql);
 		

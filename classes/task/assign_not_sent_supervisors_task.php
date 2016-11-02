@@ -31,7 +31,7 @@ class assign_not_sent_supervisors_task extends \core\task\scheduled_task {
      * Run task.
      */
     public function execute() {
-		require('lib.php');
+		//require('lib.php');
         global $CFG, $DB;
 
 		mtrace('My assign not sent spvrs is working');	
