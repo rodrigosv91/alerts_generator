@@ -50,9 +50,9 @@ class scheduled_alert_task extends \core\task\scheduled_task {
 			$context = \context_course::instance($record_msg->courseid);
 			
 			$query_std = 	"SELECT u.id 
-									FROM mdl_role_assignments AS a
-                                    INNER JOIN	mdl_user AS u 
-									WHERE a.contextid = 26 
+									FROM {role_assignments} AS a
+                                    INNER JOIN {user} AS u 
+									WHERE a.contextid = ". $context->id . "
 									AND roleid = 5 
 									AND a.userid = u.id 
 									AND u.deleted = 0 
@@ -72,10 +72,13 @@ class scheduled_alert_task extends \core\task\scheduled_task {
 					
 				$message = 	$record_msg->message;
 				
+				
 				if( ($record_msg->customized) > 0){
 					$message = str_replace("{user_first_name}", $touser->firstname, $message);					
 				}
 				email_to_user($touser, $fromuser, $record_msg->subject, $message, $message, '', '', true);
+				
+				
 				
 				$ag_dest = new \stdClass();
 				$ag_dest->messageid = $rs->messageid;
