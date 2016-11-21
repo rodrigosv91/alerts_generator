@@ -50,8 +50,8 @@ class scheduled_alert_task extends \core\task\scheduled_task {
 			$context = \context_course::instance($record_msg->courseid);
 			
 			$query_std = 	"SELECT u.id 
-									FROM mdl_role_assignments AS a
-                                    INNER JOIN	mdl_user AS u 
+									FROM {role_assignments} AS a
+                                    INNER JOIN {user} AS u 
 									WHERE a.contextid = 26 
 									AND roleid = 5 
 									AND a.userid = u.id 
