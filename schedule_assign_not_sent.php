@@ -22,6 +22,8 @@ $assign_id = required_param('assign_id', PARAM_INT);
 $subject = required_param('subject', PARAM_TEXT);
 $messagetext = required_param('texto', PARAM_TEXT);
 
+$customized = required_param('customized', PARAM_INT);
+
 /* Access control */
 require_login( $course_id );
 $context = context_course::instance( $course_id );
@@ -37,6 +39,9 @@ if($asgn_count==0){
 	$recordmsg->subject = $subject;
 	$recordmsg->message = $messagetext;
 	$recordmsg->courseid = $course_id;
+	
+	$recordmsg->customized = $customized;
+	
 	$messageid = $DB->insert_record('block_alerts_generator_msg', $recordmsg, true);
 
 

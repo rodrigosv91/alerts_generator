@@ -61,6 +61,10 @@ $string['assign_not_sent_spvrs_alert'] = 'Assign Not Sent Alert - Teachers';
 $string['show_assign_not_sent_alert'] = 'Show Assigns Not Sent Alert - Students'; 
 $string['show_assign_not_sent_spvrs_alert'] = 'Show Assigns Not Sent Alert - Teachers'; 
 
+$string['show_expire_alerts_title'] = 'Show Expire Alerts'; 
+
+$string['show_scheduled_alerts_title'] = 'Show Scheduled Alerts'; 
+
 $string['absence_alert'] = 'Absence Alert - Students';
 $string['absence_alert_spvrs'] = 'Absence Alert - Teachers'; 
 
@@ -77,3 +81,27 @@ $string['alert_for_teachers'] = 'Alerts for teachers';
 
 $string['absence_users_reseted'] = 'List reseted';
 $string['absence_users_not_reseted'] = 'List not reseted';
+
+$string['scheduled_alert_2'] = 'Alert Scheduled, schedule another alert?';
+
+$string['scheduled_alert_3'] = 'Alert scheduled, check scheduled alerts?';
+
+$string['redirect_opt_1'] = 'Yes';
+$string['redirect_opt_2'] = 'No, Show scheduled alerts';
+
+$string['custom_checkbox_help_message'] = 'The expression "{user_first_name}" will be replaced for the user name in the message.';
+
+$string['custom_checkbox_help_example'] = 'Example: Hello {user_first_name}, I`m  sending this message to alert you about something.';
+
+$string['scheduled_alert_title'] = 'Scheduled Alert';
+$string['scheduled_alert_title_2'] = 'Create scheduled alert';
+$string['scheduled_alert_title_3'] = 'Edit scheduled alert';
+
+$string['invalid_date'] = 'Invalid Date';
+$string['invalid_date_2'] = 'Chosen date is not valid';
+
+$string['delete'] = 'Delete';
+$string['update'] = 'Update';
+$string['register'] = 'Register';
+$string['cancel'] = 'Cancel';
+

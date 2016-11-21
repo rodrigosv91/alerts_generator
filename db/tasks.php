@@ -59,7 +59,17 @@ $tasks = array(
         
     ),
 	 array(
-        'classname' => 'block_alerts_generator\task\absence_alert_supervisors_task',
+        'classname' => 'block_alerts_generator\task\absence_alert_supervisors_task', 
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+        
+    ),
+	 array(
+        'classname' => 'block_alerts_generator\task\scheduled_alert_task', 
         'blocking' => 0,
         'minute' => '*',
         'hour' => '*',

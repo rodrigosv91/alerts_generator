@@ -31,6 +31,8 @@ $messagetext = required_param('texto', PARAM_TEXT);
 $begin_date_str = required_param('from_date', PARAM_TEXT);
 $end_date_str = required_param('to_date', PARAM_TEXT);
 
+$customized = required_param('customized', PARAM_INT);
+
 $absence_time =  $days*86400;
 
 if($end_date_str != null){
@@ -69,6 +71,9 @@ $recordmsg->fromid = $USER->id;
 $recordmsg->subject = $subject;
 $recordmsg->message = $messagetext;
 $recordmsg->courseid = $course_id;
+
+$recordmsg->customized = $customized;
+
 $DB->update_record('block_alerts_generator_msg', $recordmsg, $bulk=false);
 
 $record_absence = new stdClass();

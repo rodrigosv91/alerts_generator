@@ -67,9 +67,9 @@ $result = $DB->get_recordset_sql( $query );
 				
 			}
 
-			input.text, textarea.text { /* font-family: Arial;  */ }
+			input.text, textarea.text { /*  */ font-family: Arial;  }
 				
-			.ui-widget { /* font-size: 12px; */} 
+			.ui-widget { /* */font-size: 12px; } 
 	
 			.container_body_ag{			
 				text-align:center;
@@ -127,6 +127,9 @@ $result = $DB->get_recordset_sql( $query );
 							assign_id = $("#form1").find( "select[name='assign_id']" ).val(),
 							subjectval = $form.find( "input[name='subject']" ).val(),
 							textoval = $form.find( "textarea[name='texto']" ).val(),
+							
+							customized = $form.find( "input[name='check_custom_message']" ).is(":checked")== true ? 1 : 0,
+							
 							url = $("#form1").find("form[name='usrform']").attr( "action" );	
 							
 							//alert(url);
@@ -143,7 +146,8 @@ $result = $DB->get_recordset_sql( $query );
 									}else{
 																																			
 										// Send the data using post			
-										var posting = $.post( url, { course_id: course_id, assign_id: assign_id, subject: subjectval, texto: textoval } );
+										var posting = $.post( url, { course_id: course_id, assign_id: assign_id, subject: subjectval, customized: customized,
+																			texto: textoval } );
 																				
 										// Do something with the result
 										posting.done(function( data ) {
@@ -184,22 +188,31 @@ $result = $DB->get_recordset_sql( $query );
 						
 			$( ".selectmenu" ).selectmenu({width: 160});
 			
-			$( ".input_subject, .text_message" ).blur(function () { // input out of focus	
-				if(  !$(this).val() )  { //!$(this).val()
-					$(this).addClass('warning');
-
-					
-				}
-				if( $(this).val() ){
-					$(this).removeClass('warning');
-					
-				}	
-			});
 
 			$( ".button" ).button();
 			//$( "#accordion" ).accordion();
 			
 			$( ".select_assign" ).selectmenu( "option", "width", 190 );
+			
+			$( ".dialog_custom_message_help" ).dialog({
+				autoOpen: false,
+				width: 300,
+				modal: true,
+				resizable: false,
+				buttons: [
+					{
+						text: "Ok",
+						click: function() {
+							$( this ).dialog( "close" );
+						}
+					}
+				]
+			});
+			
+			$( ".helpButton" ).click(function( event ) {
+				$( ".dialog_custom_message_help" ).dialog( "open" );
+				event.preventDefault();
+			});
 		});
 		</script>
 		
@@ -223,14 +236,29 @@ $result = $DB->get_recordset_sql( $query );
 			</p>
 							
 			<div id="dialog" class="dialog">
-					<p class="subject_paragraph"><?php echo get_string('subject', 'block_alerts_generator');?>:
-					<input class="input_subject text ui-widget-content ui-corner-all  " type='text' name='subject' form="usrform" ></p>
-					<textarea class="text_message text ui-widget-content ui-corner-all " rows="5" cols="60" name="texto" form="usrform"></textarea><br><br>
+				<p class="subject_paragraph"><?php echo get_string('subject', 'block_alerts_generator');?>:
+				<input class="input_subject text ui-widget-content ui-corner-all  " type='text' name='subject' form="usrform" ></p>
+				<textarea class="text_message text ui-widget-content ui-corner-all " rows="5" cols="60" name="texto" form="usrform"></textarea><br><br>
+				
+				<fieldset>
+					<legend></legend>
+					<input type="checkbox" name="check_custom_message" id="check_custom_message" class="check_custom_message" />
+					<label for="check_custom_message" class="" >Usar nome personalizado na mensagem. </label>
+					<button class=" button helpButton" style="masrgin:0px; "></span>Ajuda</a>
+				</fieldset>
+				
 				<!-- -->
-				<!-- <input class="button" type="submit"  value="Cadastrar!"> -->
+				<!-- <input class="button" type="submit"  value="Cadastrar!"> -->			
 			</div>
 		</form> 
 		</div>
+		
+		<div class="dialog_custom_message_help" style="text-align:center">
+			<?php echo get_string('custom_checkbox_help_message', 'block_alerts_generator');?> 
+			</br></br> 
+			<?php echo get_string('custom_checkbox_help_example', 'block_alerts_generator');?>   
+		</div>
+		
 		<div class="footer_page_link">			
 			<p><a href="show_assign_not_sent.php?id=<?php echo $course_id;?>" class="">Editar/Excluir Alertas Cadastrados</a></p>
 		</div>

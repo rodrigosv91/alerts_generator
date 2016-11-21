@@ -24,31 +24,27 @@ $context = context_course::instance( $course_id );
 require_capability('block/alerts_generator:viewpages', $context);
 
 $query = "SELECT 	msg.id AS msgid, 
-					aga.id AS ag_assignid, 
-					a.name, a.duedate, 
-					aga.alerttime, 
+					sch_a.id AS ag_sched_alert_id,
+					sch_a.alertdate, 
 					msg.message, 
 					msg.subject,
 					msg.customized
 					FROM {block_alerts_generator_msg} AS msg 
-					INNER JOIN {block_alerts_generator_assig} AS aga ON msg.id = aga.messageid 			
-					INNER JOIN {assign} AS a ON a.id = aga.assignid
-					WHERE msg.courseid = ". $course_id . " 
-					AND aga.sent = 0 
-					AND  a.course = " . $course_id . " 
-					ORDER BY a.name ASC, aga.alerttime DESC " ; 
+					INNER JOIN {block_alerts_generator_sch_a} AS sch_a ON msg.id = sch_a.messageid 					
+					AND msg.courseid = ". $course_id . " 
+					AND sch_a.sent = 0 
+					ORDER BY msg.subject ASC, sch_a.alertdate DESC " ; 
 				
 $result = $DB->get_recordset_sql( $query );
 
 //echo '<pre>'; print_r($result); echo '</pre>';
-
 ?>
 
 <!DOCTYPE html>
 <html>
     <head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title><?php echo get_string('show_expire_alerts_title', 'block_alerts_generator');?></title> 
+		<title><?php echo get_string('show_scheduled_alerts_title', 'block_alerts_generator');?></title>
 
 		<link rel="stylesheet" href="externalref/jquery-ui-1.12.1/jquery-ui.css">
 		<script src="externalref/jquery-1.12.4.js"></script> 
@@ -56,9 +52,8 @@ $result = $DB->get_recordset_sql( $query );
 	</head>	
 	<body>	
 		
-		<?php 
-			
-			$url = $CFG->wwwroot . '/blocks/alerts_generator/show_expire_alerts.php?id=' . $course_id;
+		<?php 		
+			$url = $CFG->wwwroot . '/blocks/alerts_generator/show_scheduled_alerts.php?id=' . $course_id;
 			$PAGE->set_url($url);
 			$PAGE->set_heading($COURSE->fullname);
 			echo $OUTPUT->header(); 		
@@ -90,6 +85,8 @@ $result = $DB->get_recordset_sql( $query );
 				margin-bottom: 3em; 
 			}
 			
+			.ui-datepicker-trigger { margin-left:0.2em; width: 1.5em; }
+			
 			.container_alerts{					
 				margin-top: 2em; /*
 				font-size: 100%;	 */				
@@ -118,11 +115,11 @@ $result = $DB->get_recordset_sql( $query );
 					if (confirm('<?php echo get_string('confirmation_message', 'block_alerts_generator');?>')) {
 						
 						var course_id  = <?php echo json_encode($course_id); ?>;
-						var ag_assignid = $(this).closest('.alert_unit').find("input:hidden[name='ag_assignid']").val();				
+						var ag_sched_alert_id = $(this).closest('.alert_unit').find("input:hidden[name='ag_sched_alert_id']").val();
 						var msg_id = $(this).closest('.alert_unit').find("input:hidden[name='msg_id']").val();				
-						var url = "del_sch_assign_exp.php";
+						var url = "del_sch_alert.php";
 						
-						var posting = $.post( url, { ag_assignid: ag_assignid, msg_id: msg_id, course_id: course_id } );
+						var posting = $.post( url, { ag_sched_alert_id: ag_sched_alert_id, msg_id: msg_id, course_id: course_id } );
 						
 						posting.done(function( data ) {
 							if(data){	
@@ -138,37 +135,45 @@ $result = $DB->get_recordset_sql( $query );
 				});
 				
 				$(".container_alerts").on('click', '.btnEdit', function() { 
-					//adjust etf_form default values
-					var ag_assignid = $(this).closest('.alert_unit').find("input:hidden[name='ag_assignid']").val();						
+					//adjust etf_form default values								
+					var ag_sched_alert_id = $(this).closest('.alert_unit').find("input:hidden[name='ag_sched_alert_id']").val();
 					var msg_id = $(this).closest('.alert_unit').find("input:hidden[name='msg_id']").val();
 					var asgn_name = $(this).closest('.alert_unit').find("h3").text(); 
 					
 					var msg_subject = $(this).closest('.alert_unit').find("input:hidden[name='msg_subject']").val();			
 					var msg_message = $(this).closest('.alert_unit').find("input:hidden[name='msg_message']").val();
-					var ag_alerttime = $(this).closest('.alert_unit').find("input:hidden[name='ag_alerttime']").val();
+					var ag_alertdate = $(this).closest('.alert_unit').find("input:hidden[name='ag_alertdate']").val();
 					var msg_customized = $(this).closest('.alert_unit').find("input:hidden[name='msg_customized']").val();
 					
 					
-
 					var edtform = $( "#dialog_edt_form" );				
 					edtform.find("input[name='edt_subject']").val(msg_subject);
 					edtform.find("textarea[name='edt_texto']").val(msg_message);
-					edtform.find("span.edt_asgn_name").text(asgn_name);
+					edtform.find("span.edt_asgn_name").text(asgn_name);				
 					
-					edtform.find("input[name='check_custom_message']").prop('checked', (msg_customized > 0 ? true : false) );
-											
-					var days = Math.floor(ag_alerttime/86400);
+					var ag_alertdate_formated = getformatedDate(ag_alertdate);
 					
-					edtform.find("input[name='edt_days']").val(days);
-				
-					var fullmin = (ag_alerttime-(days*86400))/60;
+					edtform.find("input[name='input_date']").val( ag_alertdate_formated );
+					/*										
+					var days = Math.floor(ag_alertdate/86400);
+									
+					var fullmin = (ag_alertdate-(days*86400))/60;
 								
 					var m = fullmin % 60;
 					var h = (fullmin-m)/60;
-
-					var hm_time = (h<10?"0":"") + h + ":" + (m<10?"0":"") + m;
-	
+					*/
 					
+					var date = new Date(ag_alertdate*1000);
+					
+					var m = date.getMinutes();
+					var h = date.getHours();				
+					
+					var hm_time = (h<10?"0":"") + h + ":" + (m<10?"0":"") + m;
+					
+					//alert(hm_time);
+					
+					edtform.find("input[name='check_custom_message']").prop('checked', (msg_customized > 0 ? true : false) );
+							
 					edtform.find("select[name='edt_hm_time'] option").filter(function() {
 						return $(this).text() == hm_time; 
 					}).prop('selected', true);
@@ -178,7 +183,7 @@ $result = $DB->get_recordset_sql( $query );
 					
 					//open dialog form
 					$( "#dialog_edt_form" ) 
-					.data({ ag_assignid: ag_assignid, msg_id: msg_id })
+					.data({ ag_sched_alert_id: ag_sched_alert_id, msg_id: msg_id })
 					.dialog( "open" );							
 				});
 				
@@ -192,12 +197,15 @@ $result = $DB->get_recordset_sql( $query );
 							text: "Ok",
 							click: function() {
 								
-								var course_id  = <?php echo json_encode($course_id);?>;
-								var ag_assignid = $( "#dialog_edt_form" ).data('ag_assignid');
+								var course_id  = <?php echo json_encode($course_id);?>;	
+								
+								var input_date = $(".input_date").datepicker('getDate') ; 
+							
+								var ag_sched_alert_id = $( "#dialog_edt_form" ).data('ag_sched_alert_id');
 								var msg_id = $( "#dialog_edt_form" ).data('msg_id'); 
 		
 								var $form = $( this ).closest('#dialog_edt_form').find("form[name='edtform']"),
-								days = $form.find( "input[name='edt_days']" ).val(),
+								
 								hm_time = $form.find( "select[name='edt_hm_time']" ).val(),
 								subjectval = $form.find( "input[name='edt_subject']" ).val(),
 								textoval = $form.find( "textarea[name='edt_texto']" ).val(),
@@ -206,35 +214,59 @@ $result = $DB->get_recordset_sql( $query );
 								
 								url = $form.attr( "action" );
 
-								if( ($.trim(textoval) == '') && ($.trim(subjectval) == '') ){						
-									alert('<?php echo get_string('empty_subject_message', 'block_alerts_generator');?>'); 	
-								}else{						
-									if($.trim(textoval) == ''){							
-										alert('<?php echo get_string('empty_message', 'block_alerts_generator');?>'); 
-									}	
-									else{
-										if($.trim(subjectval) == ''){ 
-											alert('<?php echo get_string('empty_subject', 'block_alerts_generator');?>'); 
-										}else{	
-											// Send the data using post	
-											
-											var posting = $.post( url, { days: days, hm_time: hm_time, ag_assignid: ag_assignid, customized: customized,
-															msg_id: msg_id, subject: subjectval, texto: textoval, course_id: course_id} );																				
-											posting.done(function( data ) {
-												if(data){																							
-													alert("<?php echo get_string('alert_updated', 'block_alerts_generator');?>");												 
-													//alert("Alerta Atualizado");	
-													$( "#dialog_edt_form" ).dialog( "close" );
-													location.reload();
+								//alert(url);
+								
+								if($.trim(input_date) == '' || $.trim(input_date) == null){		
+									alert('<?php echo get_string('invalid_date', 'block_alerts_generator');?>'); 
+								}
+								else{
+									
+									var str_hm_time = hm_time;
+									var str_hm_time_splited = str_hm_time.split(':',2);
+									var str_input_date = new Date(input_date);
+									
+									str_input_date.setHours(str_hm_time_splited[0]);
+									str_input_date.setMinutes(str_hm_time_splited[1]);
+									
+									//alert(str_input_date);
+									
+									if(str_input_date < new Date()){
+										alert('<?php echo get_string('invalid_date_2', 'block_alerts_generator');?>'); 
+									}else{	
+									/*  */
+										if( ($.trim(textoval) == '') && ($.trim(subjectval) == '') ){						
+											alert('<?php echo get_string('empty_subject_message', 'block_alerts_generator');?>'); 	
+										}else{						
+											if($.trim(textoval) == ''){							
+												alert('<?php echo get_string('empty_message', 'block_alerts_generator');?>'); 
+											}	
+											else{
+												if($.trim(subjectval) == ''){ 
+													alert('<?php echo get_string('empty_subject', 'block_alerts_generator');?>'); 
+												}else{	
+													// Send the data using post	
 													
-												} else {
-													alert("<?php echo get_string('alert_not_updated', 'block_alerts_generator');?>");
-													//alert("Alerta Não Atualizado");
+													var posting = $.post( url, { hm_time: hm_time, customized: customized, 
+																					ag_sched_alert_id: ag_sched_alert_id,
+																					input_date: input_date, msg_id: msg_id, 
+																					subject: subjectval, texto: textoval, course_id: course_id} );																				
+													posting.done(function( data ) {
+														if(data){																							
+															alert("<?php echo get_string('alert_updated', 'block_alerts_generator');?>");												 
+															//alert("Alerta Atualizado");	
+															$( "#dialog_edt_form" ).dialog( "close" );
+															location.reload();
+															
+														} else {
+															alert("<?php echo get_string('alert_not_updated', 'block_alerts_generator');?>");
+															//alert("Alerta Não Atualizado");
+														}
+													});																					
 												}
-											});																					
+											}
 										}
 									}
-								}
+								}//end else
 								//$( this ).dialog( "close" );						
 							}
 						},
@@ -246,24 +278,7 @@ $result = $DB->get_recordset_sql( $query );
 						}
 					]
 				});
-				
-				$( ".spinner" ).spinner({ 
-					max: 999999999, 
-					min: 0, 
-					value:0
-				}).on('input', function () {
-					if ($(this).data('onInputPrevented')) return;
-					var val = this.value,
-						$this = $(this),
-						max = $this.spinner('option', 'max'),
-						min = $this.spinner('option', 'min');        
-					if (!val.match(/^[+-]?[\d]{0,}$/)) val = $(this).data('defaultValue');
-					this.value = val > max ? max : val < min ? min : val;
-				}).on('keydown', function (e) {
-					if (!$(this).data('defaultValue')) $(this).data('defaultValue', this.value);
-					$(this).data('onInputPrevented', e.which === 8 ? true : false);
-				});
-				
+								
 				$( ".selectmenu" ).selectmenu({width: 100});
 				
 				$( ".dialog_custom_message_help" ).dialog({
@@ -285,13 +300,66 @@ $result = $DB->get_recordset_sql( $query );
 					$( ".dialog_custom_message_help" ).dialog( "open" );
 					event.preventDefault();
 				});
+				
+				//datepicker validation
+				var min_date2 = new Date();
+				min_date2.setHours(00);
+				min_date2.setMinutes(00);
+				min_date2.setSeconds(00);
+				min_date2.setMilliseconds(00);
+								
+				$( ".input_date" )
+				.attr("placeholder", "dd/mm/yyyy")
+				.datepicker({
+					dateFormat: "dd/mm/yy",
+					//defaultDate: "+1w",
+					changeMonth: true,
+					changeYear: true,
+					//numberOfMonths: 1
+					minDate: min_date2,
+					//maxDate: "10Y",	
+					showOn: "both",
+					buttonImage: "images/calendar.gif",
+					buttonImageOnly: true,
+					buttonText: "Select date"
+				}).on( "change", function() {
+					if(  getDate( this ) < min_date2  ){				
+						$( this ).datepicker('setDate', null) ;
+						//alert("Data inválida");
+					}				
+					//from.datepicker('setDate', from.datepicker('getDate'));				  
 				});
+						
+				var dateFormat = "dd/mm/yy";
+
+				function getDate( element ) {
+					var date;
+					try {
+						date = $.datepicker.parseDate( dateFormat, element.value );
+					} catch( error ) {
+					date = null;
+					}		 
+					return date;
+				}			
+				
+				function getformatedDate( fulltimestamp ) {
+					var date = new Date(fulltimestamp * 1000);
+					var d  = date.getDate();
+					var m = date.getMonth() + 1;
+					var y = date.getFullYear();				
+					var formatedDate =  (d<10?"0":"") + d + "/" + (m<10?"0":"") + m  + "/" + y;
+				 
+					return formatedDate;
+				}
+				
+				$(".ui-datepicker").draggable() ;
+			});
 		</script>
 	
 		
 		<div class="container_body_ag">
 		
-		<h2><?php echo get_string('assign_expiration_alert', 'block_alerts_generator');?></h2>
+		<h2><?php echo get_string('scheduled_alert_title', 'block_alerts_generator');?></h2>
 		
 		<?php if($result->valid()): ?>
 		
@@ -299,20 +367,19 @@ $result = $DB->get_recordset_sql( $query );
 			<?php foreach ($result  as  $rs) :?>
 				
 				<div class="alert_unit">	
-					<h3><?php echo $rs->name ?></h3>
+					<h3><?php echo get_string('subject', 'block_alerts_generator');?>: <?php echo $rs->subject ?></h3>
 					
 					<div>
-						<p>Data de Entrega: <?php echo userdate($rs->duedate) ?></p>
-						<p>Data do Alerta: <?php echo userdate($rs->duedate - $rs->alerttime) ?></p>
+						<p>Data do Alerta: <?php echo userdate($rs->alertdate) ?></p>
 						<p>Mensagem: </p>
 						<p><?php echo $rs->message ?></p>			
-						<div>
-							<input type="hidden" value="<?php echo $rs->ag_assignid ?>" class="ag_assignid" name="ag_assignid" />
+						<div>			
+							<input type="hidden" value="<?php echo $rs->ag_sched_alert_id ?>" class="ag_sched_alert_id" name="ag_sched_alert_id" />						
 							<input type="hidden" value="<?php echo $rs->msgid ?>" class="msg_id" name="msg_id" />
 							<input type="hidden" value="<?php echo $rs->subject ?>" class="msg_subject" name="msg_subject" />
-							<input type="hidden" value="<?php echo $rs->alerttime ?>" class="ag_alerttime" name="ag_alerttime" />
+							<input type="hidden" value="<?php echo $rs->alertdate ?>" class="ag_alertdate" name="ag_alertdate" />
 							<input type="hidden" value="<?php echo $rs->message ?>" class="msg_message" name="msg_message" />
-							<input type="hidden" value="<?php echo $rs->customized ?>" class="msg_customized" name="msg_customized" />
+							<input type="hidden" value="<?php echo $rs->customized ?>" class="msg_customized" name="msg_customized" />							
 							
 							<button class="button btnEdit" name="btnEdit">Edit</button>
 							<button class="button btnDelete" name="btnDelete">Delete</button>
@@ -324,12 +391,12 @@ $result = $DB->get_recordset_sql( $query );
 		
 		<div id="dialog_edt_form" >
 		
-			<form action="edt_sch_assign_exp.php" method="post" name="edtform">
+			<form action="edt_sch_alert.php" method="post" name="edtform">
 				<input type="hidden" id="course_id" value="<?php echo $course_id ?>" name="course_id" form="edtform"/> 
 					
 						
-				<p>	Quando faltar 
-				<input class="spinner" name="edt_days" style="width: 100px"> dias e 
+				<p>Em
+				<input type="text" class="input_date"  name="input_date" style="width: 100px; height:18px; margin: 0;"> às
 					
 				<select class="selectmenu" name="edt_hm_time"> 
 					<?php 
@@ -341,10 +408,7 @@ $result = $DB->get_recordset_sql( $query );
 					?>
 				</select>
 				horas	
-				</p>
-							
-				<p>para expirar a tarefa: <span class="edt_asgn_name"> </span> </p>
-			
+				</p>									
 				<p>Enviar para alunos a mensagem:</p>
 				
 				<p class="subject_paragraph"><?php echo get_string('subject', 'block_alerts_generator');?>:
@@ -369,14 +433,14 @@ $result = $DB->get_recordset_sql( $query );
 		</div>
 		
 		<div class="footer_page_link">
-			<p><a href="expire_task_alert.php?id=<?php echo $course_id;?>" class="">Inserir novo alerta</a></p>
+			<p><a href="scheduled_alert.php?id=<?php echo $course_id;?>" class="">Inserir novo alerta</a></p>
 		</div>
 		
 		<?php else:  ?>
 		
 		<div class="no_results"><p>Não há alertas cadastrados</p></div>
 		
-		<p><a href="expire_task_alert.php?id=<?php echo $course_id;?>" class="">Inserir novo alerta</a></p>
+		<p><a href="scheduled_alert.php?id=<?php echo $course_id;?>" class="">Inserir novo alerta</a></p>
 		
 		<?php endif;  ?>	
 		

@@ -18,7 +18,7 @@
 
 namespace block_alerts_generator\task;
 
-class assign_expiration_task extends \core\task\scheduled_task {
+class scheduled_alert_task extends \core\task\scheduled_task {
     /**
      * Get a descriptive name for this task (shown to admins).
      *
@@ -33,42 +33,35 @@ class assign_expiration_task extends \core\task\scheduled_task {
     public function execute() {
         global $CFG, $DB;
 
-		mtrace('My assign_expiration_task is working ');			
-		
-		$sql = "SELECT 	asgn.messageid, 
-						asgn.id, 
-						asgn.assignid 
-						FROM {block_alerts_generator_assig} AS asgn 
-						INNER JOIN {assign} AS a ON asgn.assignid = a.id 
-						WHERE (a.duedate - asgn.alerttime) <= UNIX_TIMESTAMP(NOW()) 
-						AND asgn.sent = 0";
+		mtrace('My scheduled_alert_task is working ');			
+							
+		$sql = "	SELECT 	sch_a.messageid, 
+						sch_a.id		
+						FROM {block_alerts_generator}_sch_a AS sch_a 					
+						WHERE (sch_a.alertdate) <= UNIX_TIMESTAMP(NOW()) 
+						AND sch_a.sent = 0";
 		
 		$result = $DB->get_recordset_sql($sql);
 		
 		foreach ($result  as  $rs) { 
 			
-			$record = $DB->get_record('block_alerts_generator_msg', array('id' => $rs->messageid));
+			$record_msg = $DB->get_record('block_alerts_generator_msg', array('id' => $rs->messageid));
 
-			$context = \context_course::instance($record->courseid);
-			//$students = \get_role_users(5 , $context);
-					
-			$query_std = "SELECT 	u.id 
-									FROM {role_assignments} AS a, 
-									{user} AS u 
-									WHERE contextid = ". $context->id . " 
+			$context = \context_course::instance($record_msg->courseid);
+			
+			$query_std = 	"SELECT u.id 
+									FROM mdl_role_assignments AS a
+                                    INNER JOIN	mdl_user AS u 
+									WHERE a.contextid = 26 
 									AND roleid = 5 
-									AND a.userid=u.id 
+									AND a.userid = u.id 
 									AND u.deleted = 0 
-									AND u.suspended = 0 
-									AND a.userid NOT IN( 
-													SELECT 	userid 
-															FROM {assign_submission} 
-															WHERE assignment = ".$rs->assignid. " )";
+									AND u.suspended = 0";
 			
 			$students = $DB->get_recordset_sql($query_std);
 								
 			$fromuser = new \stdClass();
-			$fromuser = $DB->get_record('user', array('id' => $record->fromid));  
+			$fromuser = $DB->get_record('user', array('id' => $record_msg->fromid));  
 							
 			foreach ($students   as  $std) { 
 				$touser = new \stdClass();
@@ -77,12 +70,12 @@ class assign_expiration_task extends \core\task\scheduled_task {
 				//$touser->email = $DB->get_field('user', 'email', array('id' => $std->id));  
 				$touser = $DB->get_record('user', array('id' => $std->id, 'deleted' => 0), '*', MUST_EXIST); 
 					
-				$message = 	$record->message;
+				$message = 	$record_msg->message;
 				
-				if( ($record->customized) > 0){
+				if( ($record_msg->customized) > 0){
 					$message = str_replace("{user_first_name}", $touser->firstname, $message);					
 				}
-				email_to_user($touser, $fromuser, $record->subject, $message, $message, '', '', true);
+				email_to_user($touser, $fromuser, $record_msg->subject, $message, $message, '', '', true);
 				
 				$ag_dest = new \stdClass();
 				$ag_dest->messageid = $rs->messageid;
@@ -93,10 +86,10 @@ class assign_expiration_task extends \core\task\scheduled_task {
 			
 			$students->close(); 
 			
-			$ag_assign = new \stdClass();
-			$ag_assign->id = $rs->id;
-			$ag_assign->sent = 1;
-			$DB->update_record('block_alerts_generator_assig', $ag_assign, $bulk=false); // mark message as sent 
+			$ag_scheduled_alert = new \stdClass();
+			$ag_scheduled_alert->id = $rs->id;
+			$ag_scheduled_alert->sent = 1;
+			$DB->update_record('block_alerts_generator_sch_a', $ag_scheduled_alert, $bulk=false); // mark message as sent 
 			
 		}	
 		

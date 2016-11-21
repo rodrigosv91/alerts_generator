@@ -131,7 +131,7 @@ $result = $DB->get_recordset_sql( $query );
 					
 			});
 						
-			//$( ".selectmenu" ).selectmenu({width: 200});	
+			$( ".selectmenu" ).selectmenu({width: 200});	
 			//$( ".selectmenu" ).selectmenu({});
 			$( ".button" ).button();
 			
@@ -152,9 +152,10 @@ $result = $DB->get_recordset_sql( $query );
 					<option value="<?php echo $rs->id; ?>"><?php echo  $rs->name; ?></option>				
 				<?php endforeach; ?>
 			</select> 
-			<!-- <button class="saveAlert " type="button"  style="margin:0px;"  >Criar Alerta</button> -->
-			<button class="saveAlert " type="button">Criar Alerta</button> 
+			<button class="saveAlert " type="button"  style="margin:0px;">Criar Alerta</button>
+			<!-- <button class="saveAlert " type="button">Criar Alerta</button>  -->
 		</div>	
+		
 		<div class="footer_page_link">
 			<p><a href="show_assign_not_sent_spvrs.php?id=<?php echo $course_id;?>" class="">Editar/Excluir Alertas Cadastrados</a></p>
 		</div>

@@ -61,12 +61,19 @@ class block_alerts_generator extends block_list {
 		
 		$url= $CFG->wwwroot . '/blocks/alerts_generator/show_assign_not_sent.php?id=' . $course->id;
 		$this->content->items[] = html_writer::link($url, get_string('assign_not_sent_title_2', 'block_alerts_generator'), array('target' => '_blank'));
-			
+					
 		$this->content->items[] = "";
 		$url= $CFG->wwwroot . '/blocks/alerts_generator/absence_alert.php?id=' . $course->id;
 		$this->content->items[] = html_writer::link($url, get_string('absence_alert_title', 'block_alerts_generator'), array('target' => '_blank'));
-			
 		
+		$this->content->items[] = "";
+		$url= $CFG->wwwroot . '/blocks/alerts_generator/scheduled_alert.php?id=' . $course->id;
+		$this->content->items[] = html_writer::link($url, get_string('scheduled_alert_title_2', 'block_alerts_generator'), array('target' => '_blank'));
+		
+		$url= $CFG->wwwroot . '/blocks/alerts_generator/show_scheduled_alerts.php?id=' . $course->id;
+		$this->content->items[] = html_writer::link($url, get_string('scheduled_alert_title_3', 'block_alerts_generator'), array('target' => '_blank'));	
+	
+	
 	
 		$this->content->items[] =  '<h3>' . get_string('alert_for_teachers', 'block_alerts_generator') . '</h3>';
 			

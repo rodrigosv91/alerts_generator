@@ -79,9 +79,15 @@ class assign_not_sent_task extends \core\task\scheduled_task {
 				//mtrace("student id: ". $std->id);
 			
 				$touser = new \stdClass();
-				$touser = $DB->get_record('user', array('id' => $std->id)); 					
-				email_to_user($touser, $fromuser, $record_msg->subject, $record_msg->message, $record_msg->message, '', '', true);
+				$touser = $DB->get_record('user', array('id' => $std->id, 'deleted' => 0), '*', MUST_EXIST); 
 				
+				$message = 	$record_msg->message;
+				
+				if( ($record_msg->customized) > 0){
+					$message = str_replace("{user_first_name}", $touser->firstname, $message);					
+				}	
+				email_to_user($touser, $fromuser, $record_msg->subject, $message, $message, '', '', true);
+								
 				$ag_dest = new \stdClass();
 				$ag_dest->messageid = $rs->messageid;
 				$ag_dest->toid = $std->id;

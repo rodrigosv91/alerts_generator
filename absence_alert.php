@@ -33,7 +33,8 @@ $query = 'SELECT 	abs.id as absid,
 					msg.fromid, 
 					msg.subject, 
 					msg.message,
-					msg.courseid
+					msg.courseid,
+					msg.customized
 					FROM {block_alerts_generator_abs} abs 
 					INNER JOIN {block_alerts_generator_msg} msg 
 					ON abs.messageid = msg.id 
@@ -70,9 +71,7 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 		?>	
 				
 		<style>
-			.warning{      
-				border: 1px solid red;
-			} 
+			
 			
 			body {/*
 				color: #333333;
@@ -83,7 +82,7 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 
 			input.text, textarea.text { /* font-family: Arial;  */}
 				
-			.ui-widget { /* font-size: 12px; */} 
+			.ui-widget { /* */ font-size: 12px; } 
 					
 						
 			input[type="radio"] + label, .labelStatus{
@@ -115,16 +114,7 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 				margin-top: 0em; 
 			}
 			
-			.status_alert{
-				/* */ width: 14em; 			
-				margin:auto;
-				margin-top: 1em;
-				margin-bottom: 2em; 	
-				
-				display: none;
-				visibility: hidden;
-				
-			}
+
 			
 			.execution_date_alert{
 				/* */ width: 28em; 			
@@ -152,6 +142,8 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 				
 				var abs_begin_date = $('.prop_alert').find("input:hidden[name='abs_begin_date']").val();
 				var abs_end_date = $('.prop_alert').find("input:hidden[name='abs_end_date']").val();
+			
+				var msg_customized = $('.prop_alert').find("input:hidden[name='msg_customized']").val();
 				
 				
 				if( abs_begin_date ){
@@ -163,6 +155,9 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 				
 				$( ".abs_form" ).find("input[name='from_date']").val( abs_begin_date);
 				$( ".abs_form" ).find("input[name='to_date']").val( abs_end_date );
+				$( ".abs_form" ).find("input[name='to_date']").val( abs_end_date );
+				
+				$( ".abs_form" ).find("input[name='check_custom_message']").prop('checked', (msg_customized > 0 ? true : false) );
 				
 			}
 			
@@ -203,6 +198,9 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 							days = $("#form_abs").find( "input[name='days']" ).val(),
 							subjectval = $form.find( "input[name='subject']" ).val(),
 							textoval = $form.find( "textarea[name='texto']" ).val(),
+							
+							customized = $form.find( "input[name='check_custom_message']" ).is(":checked")== true ? 1 : 0,
+							
 							url = $("#form_abs").find("form[name='usrform']").attr( "action" ); 				
 																				
 							if( ($.trim(textoval) == '') && ($.trim(subjectval) == '') ){						
@@ -216,7 +214,7 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 										alert('<?php echo get_string('empty_subject', 'block_alerts_generator');?>'); 																
 									}else{			
 																	
-										var posting = $.post( url, { course_id: course_id, //id_msg: id_msg, id_abs: id_abs,
+										var posting = $.post( url, { course_id: course_id, customized: customized, //id_msg: id_msg, id_abs: id_abs,
 																		days: days, subject: subjectval, texto: textoval, //} );
 																			from_date : from_date, to_date: to_date } );
 																					
@@ -255,17 +253,7 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 						
 			$( ".selectmenu" ).selectmenu({width: 160});
 			
-			$( ".input_subject, .text_message" ).blur(function () { // input out of focus	
-				if(  !$(this).val() )  { //!$(this).val()
-					$(this).addClass('warning');
-
-					
-				}
-				if( $(this).val() ){
-					$(this).removeClass('warning');
-					
-				}	
-			});
+	
 			
 			$( ".spinner" ).spinner({ //allow valid entries only
 				max: 999999999, 
@@ -291,35 +279,6 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 
 			$( ".input_radio" ).checkboxradio({icon: false	});
 
-
-			$('input:radio[name=status_alert_option]').change(function() {
-
-				var course_id  = <?php echo json_encode($course_id);?>; 			
-				var action =  $('input:radio[name=status_alert_option]:checked').val() ;
-				var url = 'change_absence_alert_status.php';
-						
-				var posting = $.post( url, { course_id: course_id, action: action } );
-				
-				posting.done(function( data ) {
-																					
-					if(data.result > 0){
-						if (action == 1) {
-							alert("<?php echo get_string('alert_activated', 'block_alerts_generator');?>");
-						}
-						else if (action == 2) {
-							alert("<?php echo get_string('alert_deactivated', 'block_alerts_generator');?>");
-						}
-						//location.reload();	
-					}else{
-						if(data.result == 0){							
-							alert("<?php echo get_string('alert_not_updated', 'block_alerts_generator');?>");
-							//location.reload();														
-						} else {
-							alert("<?php echo get_string('invalid_option', 'block_alerts_generator');?>");
-						}
-					}						
-				});				
-			});
 			
 			$( ".deletAlert" ).click(function( event ) {
 				if (confirm('<?php echo get_string('confirmation_message', 'block_alerts_generator');?>')) {						
@@ -426,6 +385,27 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 			}
 			
 			$(".ui-datepicker").draggable() ;
+			
+			$( ".dialog_custom_message_help" ).dialog({
+				autoOpen: false,
+				width: 300,
+				modal: true,
+				resizable: false,
+				buttons: [
+					{
+						text: "Ok",
+						click: function() {
+							$( this ).dialog( "close" );
+						}
+					}
+				]
+			});
+			
+			$( ".helpButton" ).click(function( event ) {
+				$( ".dialog_custom_message_help" ).dialog( "open" );
+				event.preventDefault();
+			});
+			
 		});
 		</script>
 		
@@ -480,11 +460,24 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 		
 		
 			<div id="dialog" class="dialog">
-					<p class="subject_paragraph"><?php echo get_string('subject', 'block_alerts_generator');?>:
-					<input class="input_subject text ui-widget-content ui-corner-all  " type='text' name='subject' form="usrform" ></p>
-					<textarea class="text_message text ui-widget-content ui-corner-all " rows="5" cols="60" name="texto" form="usrform"></textarea>
+				<p class="subject_paragraph"><?php echo get_string('subject', 'block_alerts_generator');?>:
+				<input class="input_subject text ui-widget-content ui-corner-all  " type='text' name='subject' form="usrform" ></p>
+				<textarea class="text_message text ui-widget-content ui-corner-all " rows="5" cols="60" name="texto" form="usrform"></textarea>
+				
+				<fieldset>
+					<legend></legend>
+					<input type="checkbox" name="check_custom_message" id="check_custom_message" class="check_custom_message" />
+					<label for="check_custom_message" class="" >Usar nome personalizado na mensagem. </label>
+					<button class=" button helpButton" style="masrgin:0px; "></span>Ajuda</a>
+				</fieldset>
 			</div>
 		</form> 
+		</div>
+		
+		<div class="dialog_custom_message_help" style="text-align:center">
+			<?php echo get_string('custom_checkbox_help_message', 'block_alerts_generator');?> 
+			</br></br> 
+			<?php echo get_string('custom_checkbox_help_example', 'block_alerts_generator');?>   
 		</div>
 		
 		<?php if($result->valid()): ?>
@@ -508,28 +501,16 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 			<input type="hidden" value="<?php echo $rs->absencetime ;?>" class="abs_absencetime" name="abs_absencetime" />	
 			<input type="hidden" value="<?php echo $rs->begin_date ;?>" class="abs_begin_date" name="abs_begin_date" />
 			<input type="hidden" value="<?php echo $rs->end_date ;?>" class="abs_end_date" name="abs_end_date" />
+			<input type="hidden" value="<?php echo $rs->customized ?>" class="msg_customized" name="msg_customized" />
 		</div>
 		
-		<div class="status_alert" >	
-			<fieldset>
-				<legend>Estado do Alerta: </legend>
-				<label for="radio_on">Ativado</label>
-				<input class="input_radio radio_on" type="radio" name="status_alert_option" id="radio_on" value=1  <?php echo($rs->alertstatus==1 ? 'checked' : '');?> >
-				<label for="radio_off">Desativado</label>
-				<input class="input_radio radio_off" type="radio" name="status_alert_option" id="radio_off" value=2 <?php echo($rs->alertstatus==0 ? 'checked' : '');?>>
-			</fieldset>
-		</div>
+
 				
 		<?php 	}  //end foreach 	?>	
 
 		<?php else:  ?>
 		
-		<div class="status_alert" >		
-			<fieldset>
-				<legend>Estado do Alerta: </legend>
-				<span class="ui-widget ui-state-default ui-corner-all labelStatus">Alerta não cadastrado</span>
-			</fieldset>
-		</div>
+		
 		<?php endif;  ?>
 		
 		</div>
@@ -542,4 +523,3 @@ $abs_users_count = $DB->count_records('block_alerts_generator_abs_u', array('cou
 		?>	
 	</body>
 </html>
-

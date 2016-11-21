@@ -42,6 +42,7 @@ class absence_alert_task extends \core\task\scheduled_task {
 						msg.subject, 
 						msg.message, 
 						msg.courseid, 
+						msg.customized,
 						crs.fullname
 						FROM {block_alerts_generator_abs} AS abs 
 						INNER JOIN {block_alerts_generator_msg} AS msg ON abs.messageid = msg.id
@@ -116,7 +117,15 @@ class absence_alert_task extends \core\task\scheduled_task {
 			
 				$touser = new \stdClass();
 				$touser = $DB->get_record('user', array('id' => $std->id)); 					
-				email_to_user($touser, $fromuser, $rs->subject, $rs->message, $rs->message, '', '', true);
+				
+				$message = 	$rs->message;
+				
+				if( ($rs->customized) > 0){
+					$message = str_replace("{user_first_name}", $touser->firstname, $message);					
+				}	
+				email_to_user($touser, $fromuser, $rs->subject, $message, $message, '', '', true);
+				
+				//email_to_user($touser, $fromuser, $rs->subject, $rs->message, $rs->message, '', '', true);
 				
 				$ag_abs_u = new \stdClass();
 				$ag_abs_u->userid = $std->id;

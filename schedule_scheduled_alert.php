@@ -1,4 +1,4 @@
-<?php
+  <?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,45 +15,52 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 require('../../config.php');
-global $DB, $USER;
+global $DB, $COURSE, $USER;
 
-$days = required_param('days', PARAM_INT); 
+$course_id = required_param('course_id', PARAM_INT);  
 $hm_time = required_param('hm_time', PARAM_TEXT); 
-$msg_id = required_param('msg_id', PARAM_INT);
-$ag_assignid = required_param('ag_assignid', PARAM_INT);
 $subject = required_param('subject', PARAM_TEXT);
 $messagetext = required_param('texto', PARAM_TEXT);
-$course_id = required_param('course_id', PARAM_INT);
-
 $customized = required_param('customized', PARAM_INT);
 
+$input_date_str = required_param('input_date', PARAM_TEXT);
+
 sscanf($hm_time, "%d:%d:", $hours, $minutes);
-$alert_time =  $days*86400 + $hours * 3600 + $minutes * 60 ;
+
+$input_date = strtotime( substr($input_date_str, 0, 33));
+
+$alert_date =  ( $input_date  ) + ( $hours * 3600 + $minutes * 60 );
+
 
 /* Access control */
 require_login( $course_id );
 $context = context_course::instance( $course_id );
 require_capability('block/alerts_generator:viewpages', $context);
 
-$updated_ag_msg = new stdClass();
-$updated_ag_msg->id = $msg_id;
-$updated_ag_msg->subject = $subject;
-$updated_ag_msg->message = $messagetext;
+$messageid  = -1;
+$ag_sch_alert = -1; 
 
-$updated_ag_msg->customized = $customized;
+$recordmsg = new stdClass();
+$recordmsg->fromid = $USER->id;
+$recordmsg->subject = $subject;
+$recordmsg->message = $messagetext;
+$recordmsg->courseid = $course_id;
 
-$DB->update_record('block_alerts_generator_msg', $updated_ag_msg, $bulk=false);
+$recordmsg->customized = $customized;
 
-
-$updated_ag_assign = new stdClass();
-$updated_ag_assign->id = $ag_assignid;
-$updated_ag_assign->messageid = $msg_id;
-$updated_ag_assign->alerttime = $alert_time; 
-
-$DB->update_record('block_alerts_generator_assig', $updated_ag_assign, $bulk=false);
+//$recordmsg->timecreated = time();
+$messageid = $DB->insert_record('block_alerts_generator_msg', $recordmsg, true);
 
 
-$mensagem = "Alerta Atualizado";
+$record_sch_alert = new stdClass();
+$record_sch_alert->messageid = $messageid;
+$record_sch_alert->alertdate = $alert_date;
+$record_sch_alert->sent = 0;
+$ag_sch_alert = $DB->insert_record('block_alerts_generator_sch_a', $record_sch_alert, true);
+
+
+header('Content-type: application/json');
+$mensagem = array('ag_sch_alert' => $ag_sch_alert, 'msg_id' => $messageid );
 echo json_encode($mensagem);
 
 ?>

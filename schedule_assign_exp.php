@@ -25,6 +25,8 @@ $subject = required_param('subject', PARAM_TEXT);
 $messagetext = required_param('texto', PARAM_TEXT);
 $messagehtml = $messagetext;
 
+$customized = required_param('customized', PARAM_INT);
+
 sscanf($hm_time, "%d:%d:", $hours, $minutes);
 $alert_time =  $days*86400 + $hours * 3600 + $minutes * 60 ;
 
@@ -34,13 +36,16 @@ $context = context_course::instance( $course_id );
 require_capability('block/alerts_generator:viewpages', $context);
 
 $messageid  = -1;
-$ag_assign = 1; 
+$ag_assign = -1; 
 
 $recordmsg = new stdClass();
 $recordmsg->fromid = $USER->id;
 $recordmsg->subject = $subject;
 $recordmsg->message = $messagetext;
 $recordmsg->courseid = $course_id;
+
+$recordmsg->customized = $customized;
+
 //$recordmsg->timecreated = time();
 $messageid = $DB->insert_record('block_alerts_generator_msg', $recordmsg, true);
 

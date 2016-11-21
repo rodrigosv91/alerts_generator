@@ -33,44 +33,7 @@ $query = 'SELECT 	id,
 					ORDER BY name'; 		
 $result = $DB->get_recordset_sql( $query );
 
-/** 
-$query2 = 'SELECT UNIX_TIMESTAMP(NOW()) as unix, NOW() as date FROM DUAL ';	
-$result2 = $DB->get_recordset_sql( $query2 );
-		
-foreach ($result2  as  $rs2) {
-	$unix = $rs2->unix;
-	$date_now = $rs2->date;
-}			
-//echo $unix . " ";
-//echo $date_now;
-$result2->close();
-*/	
-//foreach ($result  as  $rs) {
-//	echo "id= ". $rs->id . " name= " . $rs->name . " duedate= " . date('h:i:s d-m-Y ',$rs->duedate) . " <br> "; 
-//}		
-//echo $query ;
 
-//require_once($CFG->dirroot.'/lib/moodlelib.php');
-
-//$touser = new stdClass();
-//$touser->mailformat = 0;
-//$touser->id = 2;
-//$touser->email = "rodrigosv91@gmail.com";
-//$touser->email = "rodrigo.s.v.10@hotmail.com";
-//$touser->email = $DB->get_field('user', 'email', array('id' => 2));
-
-//echo $touser;
-//email_to_user($touser, "alguem", "teste subj", "msg teste 1", "msg teste 2", '', '', true);
- 
- /**
-$context = context_course::instance(2);
-$event = \block_analytics_graphs\event\block_analytics_graphs_event_send_email::create(array(
-    'objectid' => 2,
-    'context' => $context,
-    'other' => 'otherStringTeste',
-));
-$event->trigger();
-*/
 
 
 ?>
@@ -162,7 +125,6 @@ $event->trigger();
 	
 			
 			
-			
 		</style>
 		
 	
@@ -233,8 +195,8 @@ $event->trigger();
 						}						
 			});
 			
-			$( "#dialog-link" ).click(function( event ) {
-				$( "#dialog" ).dialog( "open" );
+			$( ".dialog_link" ).click(function( event ) {
+				$( ".dialog" ).dialog( "open" );
 				event.preventDefault();
 			});
 			
@@ -255,6 +217,7 @@ $event->trigger();
 			});
 			
 			
+			
 			$( ".dialog_confirm_redirect" ).dialog({
 				autoOpen: false,
 				width: 450,
@@ -262,13 +225,13 @@ $event->trigger();
 				resizable: false,
 				buttons: [
 					{
-						text: "Sim",
+						text: "<?php echo get_string('redirect_opt_1', 'block_alerts_generator');?>",
 						click: function() {
 							$( this ).dialog( "close" );
 						}
 					},
 					{
-						text: "Não, Verificar alertas cadastrados",
+						text: "<?php echo get_string('redirect_opt_2', 'block_alerts_generator');?>",
 						click: function() {
 							//$( this ).dialog( "Voltar para o curso" );
 							window.location.href = <?php echo  json_encode($CFG->wwwroot) ;?> + "/blocks/alerts_generator/show_expire_alerts.php?id=" + <?php echo  json_encode($course_id) ;?>  ;
@@ -295,12 +258,16 @@ $event->trigger();
 							var $form = $( this ),					
 							subjectval = $form.find( "input[name='subject']" ).val(),
 							textoval = $form.find( "textarea[name='texto']" ).val(),
+							
+							customized = $form.find( "input[name='check_custom_message']" ).is(":checked")== true ? 1 : 0,
+							
 							days = $(".exp_form").find( "input[name='days']" ).val(),
 							hm_time = $(".exp_form").find( "select[name='hm_time']" ).val(),
 							assign_id = $(".exp_form").find( "select[name='assign_id']" ).val(),
 							url = $(".exp_form").find("form[name='usrform']").attr( "action" );
 									
-													
+							//alert(customized);
+								
 							if( ($.trim(textoval) == '') && ($.trim(subjectval) == '') ){
 								
 								alert('<?php echo get_string('empty_subject_message', 'block_alerts_generator');?>'); 
@@ -316,7 +283,7 @@ $event->trigger();
 										
 										
 									}else{		
-										var posting = $.post( url, { course_id: course_id, days: days, hm_time: hm_time, assign_id: assign_id,
+										var posting = $.post( url, { course_id: course_id, days: days, hm_time: hm_time, assign_id: assign_id, customized: customized,
 														subject: subjectval, texto: textoval } );
 																														
 										posting.done(function( data ) {
@@ -324,11 +291,18 @@ $event->trigger();
 											if( data.ag_assign > 0 && data.msg_id > 0 ){																					
 												//alert("<?php echo get_string('scheduled_alert', 'block_alerts_generator');?>");
 												$( ".dialog" ).dialog("close");
-												$( '.dialog_confirm_redirect' ).dialog( "open" );															
+												
+												if(confirm('<?php echo get_string('scheduled_alert_3', 'block_alerts_generator');?>')){
+													window.location.href = <?php echo  json_encode($CFG->wwwroot) ;?> + "/blocks/alerts_generator/show_expire_alerts.php?id=" + <?php echo  json_encode($course_id) ;?>  ;
+												}else{
+													location.reload(); 
+												}
+												//$( '.dialog_confirm_redirect' ).dialog( "open" );															
 											} else {
-												//alert("<?php echo get_string('not_scheduled_alert', 'block_alerts_generator');?>");
+												alert("<?php echo get_string('not_scheduled_alert', 'block_alerts_generator');?>");
 												$( ".dialog" ).dialog("close");
-												$( '.dialog_confirm_not_scheduled_alert' ).dialog( "open" );												
+												
+												//$( '.dialog_confirm_not_scheduled_alert' ).dialog( "open" );												
 											}
 										});											
 									}
@@ -359,12 +333,12 @@ $event->trigger();
 					$this = $(this),
 					max = $this.spinner('option', 'max'),
 					min = $this.spinner('option', 'min');
-				// We want only numbers, no alphas. 
-				// We set it to previous default value.         
+				// only numbers, no alphas. 
+				// set it to previous default value.         
 				if (!val.match(/^[+-]?[\d]{0,}$/)) val = $(this).data('defaultValue');
 				this.value = val > max ? max : val < min ? min : val;
 			}).on('keydown', function (e) {
-				// we set default value for spinner.
+				// set default value for spinner.
 				if (!$(this).data('defaultValue')) $(this).data('defaultValue', this.value);
 				// To handle backspace
 				$(this).data('onInputPrevented', e.which === 8 ? true : false);
@@ -397,6 +371,28 @@ $event->trigger();
 			
 			$( ".select_hm_time" ).selectmenu( "option", "width", 120 );
 			//$( ".select_hm_time" ).selectmenu({ width : $( ".select_hm_time" ).attr("width")})
+			
+			$( ".dialog_custom_message_help" ).dialog({
+				autoOpen: false,
+				width: 300,
+				modal: true,
+				resizable: false,
+				buttons: [
+					{
+						text: "Ok",
+						click: function() {
+							$( this ).dialog( "close" );
+						}
+					}
+				]
+			});
+			
+			$( ".helpButton" ).click(function( event ) {
+				$( ".dialog_custom_message_help" ).dialog( "open" );
+				event.preventDefault();
+			});
+
+			//$( document ).tooltip();
 		});
 		</script>
 		
@@ -440,15 +436,23 @@ $event->trigger();
 			</p>
 	
 			<p class="msg_paragraph">Enviar mensagem para alunos que não enviaram a tarefa 
-				<a href="#" id="dialog-link" class=" button"><span class="ui-icon ui-icon-newwin"></span>Mensagem</a>
+				<a href="#" id="" class="dialog_link button"><span class="ui-icon ui-icon-newwin"></span>Mensagem</a>
 			</p>
 
 			<!-- ui-dialog -->
-			<div id="dialog" class="dialog">
+			<div id="" class="dialog">
 				<p class="subject_paragraph"><?php echo get_string('subject', 'block_alerts_generator');?>:
 					<input class="input_subject text ui-widget-content ui-corner-all  " type='text' name='subject' form="usrform" >
 				</p>
-					<textarea class="text_message text ui-widget-content ui-corner-all " rows="5" cols="60" name="texto" form="usrform"></textarea><br><br>
+				<textarea class="text_message text ui-widget-content ui-corner-all " rows="5" cols="60" name="texto" form="usrform" ></textarea><br><br>
+	
+				<fieldset>
+					<legend></legend>
+					<input type="checkbox" name="check_custom_message" id="check_custom_message" class="check_custom_message" />
+					<label for="check_custom_message" class="" >Usar nome personalizado na mensagem. </label>
+					<button class=" button helpButton" style="masrgin:0px; "></span>Ajuda</a>
+				</fieldset>
+				
 			</div>
 	<!--		
 			<a href="#" id="dialog-link" class=" button"><span class="ui-icon ui-icon-newwin"></span>Mensagem</a>
@@ -468,10 +472,19 @@ $event->trigger();
 		<!-- <p><a href="#" id="dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>Mensagem</a></p> -->
 		
 		
+		<div class="dialog_custom_message_help" style="text-align:center">
+			<?php echo get_string('custom_checkbox_help_message', 'block_alerts_generator');?> 
+			</br></br> 
+			<?php echo get_string('custom_checkbox_help_example', 'block_alerts_generator');?>   
+		</div>
 		
-		<div class="dialog_confirm_redirect" style="text-align:center"><?php echo get_string('scheduled_alert', 'block_alerts_generator');?>, Cadastrar outro alerta?</div>
+		<div class="dialog_confirm_redirect" style="text-align:center">
+			<?php echo get_string('scheduled_alert_2', 'block_alerts_generator');?>
+		</div>
 		
-		<div class="dialog_confirm_not_scheduled_alert" style="text-align:center"><?php echo get_string('not_scheduled_alert', 'block_alerts_generator');?></div>
+		<div class="dialog_confirm_not_scheduled_alert" style="text-align:center">
+			<?php echo get_string('not_scheduled_alert', 'block_alerts_generator');?>
+		</div>
 		
 		<div class="footer_page_link">
 			<p><a href="show_expire_alerts.php?id=<?php echo $course_id;?>" class="">Editar/Excluir Alertas Cadastrados</a></p>

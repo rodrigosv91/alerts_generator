@@ -38,6 +38,8 @@ $string['alert_deleted'] = 'Alerta Deletado';
 $string['alert_not_deleted'] = 'Alerta não Deletado';
 $string['confirmation_message'] = 'Você tem certeza ?';
 
+
+
 $string['alert_activated'] = 'Alerta Ativado';
 $string['alert_deactivated'] = 'Alerta Desativado';
 $string['invalid_option'] = 'Opção Inválida';
@@ -61,6 +63,10 @@ $string['assign_not_sent_spvrs_alert'] = 'Alerta de Tarefa não Enviada - Docent
 $string['show_assign_not_sent_alert'] = 'Mostrar Alertas de Tarefa não Enviada - Alunos';
 $string['show_assign_not_sent_spvrs_alert'] = 'Mostrar Alertas de Tarefa não Enviada - Docentes'; 
 
+$string['show_expire_alerts_title'] = 'Mostrar Alertas de tarefa expirando'; 
+
+$string['show_scheduled_alerts_title'] = 'Mostrar Alertas Agendados'; 
+
 $string['absence_alert'] = 'Alerta de Ausência - Alunos';
 $string['absence_alert_spvrs'] = 'Alerta de Ausência - Docentes';
 
@@ -78,4 +84,25 @@ $string['alert_for_teachers'] = 'Alertas para Docentes';
 $string['absence_users_reseted'] = 'Lista reiniciada';
 $string['absence_users_not_reseted'] = 'Lista não reiniciada';
 
+$string['scheduled_alert_2'] = 'Alerta Cadastrado, cadastrar outro alerta?';
 
+$string['scheduled_alert_3'] = 'Alerta inserido, vericar alertas cadastrados?';
+
+$string['redirect_opt_1'] = 'Sim';
+$string['redirect_opt_2'] = 'Não, Verificar alertas cadastrados';
+
+$string['custom_checkbox_help_message'] = 'A expressão "{user_first_name}" será substituída pelo nome do usuário na mensagem. ';
+
+$string['custom_checkbox_help_example'] = 'Exemplo: Olá {user_first_name}, estou mandando esta mensagem para alerta-lo sobre algo.';
+
+$string['scheduled_alert_title'] = 'Alerta Agendado';
+$string['scheduled_alert_title_2'] = 'Criar alerta agendado';
+$string['scheduled_alert_title_3'] = 'Editar alerta agendado';
+
+$string['invalid_date'] = 'Data Inválida';
+$string['invalid_date_2'] = 'Data escolhida não é válida';
+
+$string['delete'] = 'Deletar';
+$string['update'] = 'Atualizar';
+$string['register'] = 'Cadastrar';
+$string['cancel'] = 'Cancelar';

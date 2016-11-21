@@ -17,13 +17,22 @@
 require('../../config.php');
 global $DB, $USER;
 
+$hm_time = required_param('hm_time', PARAM_TEXT); 
 $msg_id = required_param('msg_id', PARAM_INT);
-$ag_assignid = required_param('ag_assignid', PARAM_INT);
+$ag_sched_alert_id = required_param('ag_sched_alert_id', PARAM_INT);
 $subject = required_param('subject', PARAM_TEXT);
 $messagetext = required_param('texto', PARAM_TEXT);
 $course_id = required_param('course_id', PARAM_INT);
 
 $customized = required_param('customized', PARAM_INT);
+
+$input_date_str = required_param('input_date', PARAM_TEXT);
+
+sscanf($hm_time, "%d:%d:", $hours, $minutes);
+
+$input_date = strtotime( substr($input_date_str, 0, 33));
+
+$alert_date =  ( $input_date  ) + ( $hours * 3600 + $minutes * 60 );
 
 /* Access control */
 require_login( $course_id );
@@ -39,13 +48,14 @@ $updated_ag_msg->customized = $customized;
 
 $DB->update_record('block_alerts_generator_msg', $updated_ag_msg, $bulk=false);
 
-/**
-$updated_ag_assign_ns = new stdClass();
-$updated_ag_assign_ns->id = $ag_assignid;
-$updated_ag_assign_ns->messageid = $msg_id;
 
-$DB->update_record('block_alerts_generator_ans', $updated_ag_assign_ns, $bulk=false);
-*/
+$updated_ag_sch_alert = new stdClass();
+$updated_ag_sch_alert->id = $ag_sched_alert_id;
+$updated_ag_sch_alert->messageid = $msg_id;
+$updated_ag_sch_alert->alertdate = $alert_date; 
+
+$DB->update_record('block_alerts_generator_sch_a', $updated_ag_sch_alert, $bulk=false);
+
 
 $mensagem = "Alerta Atualizado";
 echo json_encode($mensagem);

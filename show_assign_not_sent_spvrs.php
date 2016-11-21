@@ -132,7 +132,7 @@ $result = $DB->get_recordset_sql( $query );
 					<h3><?php echo $rs->name ?></h3>
 					
 					<div>
-						<p>Notificar à supervisores alunos que não enviarem a tarefa<?php //echo " " . $rs->name ?>.</p>
+						<p>Notificar à supervisores alunos que não enviarem a tarefa:<?php echo " " . $rs->name ?>.</p>
 						<p>Data de Entrega: <?php echo userdate($rs->duedate) ?></p>			
 						<div>
 							<input type="hidden" value="<?php echo $rs->ag_assignid ?>" class="ag_assignid" name="ag_assignid" />

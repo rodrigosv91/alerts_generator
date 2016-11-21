@@ -28,7 +28,8 @@ $query = "SELECT 	msg.id AS msgid,
 					a.name, 
 					a.duedate, 
 					msg.message, 
-					msg.subject
+					msg.subject,
+					msg.customized
 					FROM {block_alerts_generator_msg} AS msg 
 					INNER JOIN {block_alerts_generator_ans} AS aga ON msg.id = aga.messageid 			
 					INNER JOIN {assign} AS a ON a.id = aga.assignid
@@ -66,7 +67,7 @@ $result = $DB->get_recordset_sql( $query );
 				font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif; */
 			}
 			
-			.ui-widget { /* font-size: 12px; */ }
+			.ui-widget { /* */  font-size: 12px; }
 			
 			.container_body_ag{			
 				text-align:center;
@@ -127,13 +128,18 @@ $result = $DB->get_recordset_sql( $query );
 					
 					var msg_subject = $(this).closest('.alert_unit').find("input:hidden[name='msg_subject']").val();			
 					var msg_message = $(this).closest('.alert_unit').find("input:hidden[name='msg_message']").val();
+					
+					var msg_customized = $(this).closest('.alert_unit').find("input:hidden[name='msg_customized']").val();
 												
 					var edtform = $( "#dialog_edt_form" );				
 					edtform.find("input[name='edt_subject']").val(msg_subject);
 					edtform.find("textarea[name='edt_texto']").val(msg_message);
 					//edtform.find("span.edt_asgn_name").text(asgn_name);
 					
-					edtform.dialog( "option", "title", "Se aluno não enviar " + asgn_name + " enviar a mensagem:" );
+					edtform.find("input[name='check_custom_message']").prop('checked', (msg_customized > 0 ? true : false) );
+					
+					//edtform.dialog( "option", "title", "Se aluno não enviar " + asgn_name + " enviar a mensagem:" );
+					edtform.dialog( "option", "title", "Se aluno não enviar a tarefa enviar a mensagem:" );
 					
 					//open dialog form
 					$( "#dialog_edt_form" ) 
@@ -153,11 +159,14 @@ $result = $DB->get_recordset_sql( $query );
 								
 								var course_id  = <?php echo json_encode($course_id);?>;
 								var ag_assignid = $( "#dialog_edt_form" ).data('ag_assignid');
-								var msg_id = $( "#dialog_edt_form" ).data('msg_id'); 
+								var msg_id = $( "#dialog_edt_form" ).data('msg_id'); 															
 		
 								var $form = $( this ).closest('#dialog_edt_form').find("form[name='edtform']"),
 								subjectval = $form.find( "input[name='edt_subject']" ).val(),
 								textoval = $form.find( "textarea[name='edt_texto']" ).val(),
+								
+								customized = $form.find( "input[name='check_custom_message']" ).is(":checked")== true ? 1 : 0,
+								
 								url = 'edt_sch_assign_not_sent.php';
 
 								if( ($.trim(textoval) == '') && ($.trim(subjectval) == '') ){						
@@ -170,8 +179,8 @@ $result = $DB->get_recordset_sql( $query );
 										if($.trim(subjectval) == ''){ 
 											alert('<?php echo get_string('empty_subject', 'block_alerts_generator');?>'); 
 										}else{			
-											var posting = $.post( url, { ag_assignid: ag_assignid, msg_id: msg_id, subject: subjectval, 
-														texto: textoval, course_id: course_id} );																				
+											var posting = $.post( url, { ag_assignid: ag_assignid, msg_id: msg_id, customized: customized,
+															subject: subjectval, texto: textoval, course_id: course_id} );																				
 											posting.done(function( data ) {
 												if(data){																							
 													alert("<?php echo get_string('alert_updated', 'block_alerts_generator');?>");						
@@ -194,7 +203,27 @@ $result = $DB->get_recordset_sql( $query );
 							}
 						}
 					]
-				});		      
+				});	
+				
+				$( ".dialog_custom_message_help" ).dialog({
+					autoOpen: false,
+					width: 300,
+					modal: true,
+					resizable: false,
+					buttons: [
+						{
+							text: "Ok",
+							click: function() {
+								$( this ).dialog( "close" );
+							}
+						}
+					]
+				});
+			
+				$( ".helpButton" ).click(function( event ) {
+					$( ".dialog_custom_message_help" ).dialog( "open" );
+					event.preventDefault();
+				});
 			});
 		</script>
 
@@ -219,6 +248,7 @@ $result = $DB->get_recordset_sql( $query );
 							<input type="hidden" value="<?php echo $rs->msgid ?>" class="msg_id" name="msg_id" />
 							<input type="hidden" value="<?php echo $rs->subject ?>" class="msg_subject" name="msg_subject" />
 							<input type="hidden" value="<?php echo $rs->message ?>" class="msg_message" name="msg_message" />
+							<input type="hidden" value="<?php echo $rs->customized ?>" class="msg_customized" name="msg_customized" />
 							
 							<button class="button btnEdit" name="btnEdit">Edit</button>
 							<button class="button btnDelete" name="btnDelete">Delete</button>
@@ -242,9 +272,21 @@ $result = $DB->get_recordset_sql( $query );
 				</p>
 				<textarea class="text_message text ui-widget-content ui-corner-all " rows="6" cols="60" name='edt_texto' form="edtform"></textarea><br><br>
 				
+				<fieldset>
+					<legend></legend>
+					<input type="checkbox" name="check_custom_message" id="check_custom_message" class="check_custom_message" />
+					<label for="check_custom_message" class="" >Usar nome personalizado na mensagem. </label>
+					<button class=" button helpButton" style="masrgin:0px; "></span>Ajuda</a>
+				</fieldset>
+				
 			</form>
 		</div>
 		
+		<div class="dialog_custom_message_help" style="text-align:center">
+			<?php echo get_string('custom_checkbox_help_message', 'block_alerts_generator');?> 
+			</br></br> 
+			<?php echo get_string('custom_checkbox_help_example', 'block_alerts_generator');?>   
+		</div>
 		
 		<div class="footer_page_link">
 			<p><a href="assign_not_sent.php?id=<?php echo $course_id;?>" class="">Inserir novo alerta</a></p>
