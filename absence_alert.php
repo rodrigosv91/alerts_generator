@@ -26,7 +26,7 @@ require_capability('block/alerts_generator:viewpages', $context);
 $query = 'SELECT 	abs.id as absid, 
 					abs.messageid, 
 					abs.absencetime, 
-					abs.alertstatus,
+					
 					abs.begin_date, 
 					abs.end_date, 					
 					msg.id as msgid, 

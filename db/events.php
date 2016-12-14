@@ -17,6 +17,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016052357;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2016051900;        // Requires this Moodle version
-$plugin->component = 'block_alerts_generator'; // Full name of the plugin (used for diagnostics)
+$observers = array (
+    array (
+        'eventname' => '\core\event\course_deleted',
+        'callback'  => 'block_alerts_generator_observer::course_deleted',
+        'internal'  => false, // This means that we get events only after transaction commit.
+    ),
+);

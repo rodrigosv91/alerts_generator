@@ -37,7 +37,7 @@ class scheduled_alert_task extends \core\task\scheduled_task {
 							
 		$sql = "	SELECT 	sch_a.messageid, 
 						sch_a.id		
-						FROM {block_alerts_generator}_sch_a AS sch_a 					
+						FROM {block_alerts_generator_sch_a} AS sch_a 					
 						WHERE (sch_a.alertdate) <= UNIX_TIMESTAMP(NOW()) 
 						AND sch_a.sent = 0";
 		

@@ -26,7 +26,7 @@ require_capability('block/alerts_generator:viewpages', $context);
 $query = 'SELECT 	abs.id as absid,
 					abs.messageid, 
 					abs.absencetime,
-					abs.alertstatus, 
+					
 					abs.begin_date, 
 					abs.end_date, 
 					msg.id as msgid, 
@@ -244,35 +244,6 @@ $str = "Sun Oct 30 2016 00:00:00 GMT-0200 (Hora oficial do Brasil)";
 
 			$( ".input_radio" ).checkboxradio({icon: false	});
 
-
-			$('input:radio[name=status_alert_option]').change(function() {
-
-				var course_id  = <?php echo json_encode($course_id);?>; 			
-				var action =  $('input:radio[name=status_alert_option]:checked').val() ;
-				var url = 'change_absence_alert_status_spvrs.php';
-						
-				var posting = $.post( url, { course_id: course_id, action: action } );
-				
-				posting.done(function( data ) {
-																					
-					if(data.result > 0){
-						if (action == 1) {
-							alert("<?php echo get_string('alert_activated', 'block_alerts_generator');?>");
-						}
-						else if (action == 2) {
-							alert("<?php echo get_string('alert_deactivated', 'block_alerts_generator');?>");
-						}
-						//location.reload();	
-					}else{
-						if(data.result == 0){							
-							alert("<?php echo get_string('alert_not_updated', 'block_alerts_generator');?>");
-							//location.reload();														
-						} else {
-							alert("<?php echo get_string('invalid_option', 'block_alerts_generator');?>");
-						}
-					}						
-				});				
-			});
 			
 			$( ".deletAlert" ).click(function( event ) {
 				if (confirm('<?php echo get_string('confirmation_message', 'block_alerts_generator');?>')) {			
@@ -477,26 +448,12 @@ $str = "Sun Oct 30 2016 00:00:00 GMT-0200 (Hora oficial do Brasil)";
 			<input type="hidden" value="<?php echo $rs->end_date ;?>" class="abs_end_date" name="abs_end_date" />			
 		</div>
 		
-		<div class="status_alert" >	
-			<fieldset>
-				<legend>Estado do Alerta: </legend>
-				<label for="radio_on">Ativado</label>
-				<input class="input_radio radio_on" type="radio" name="status_alert_option" id="radio_on" value=1  <?php echo($rs->alertstatus==1 ? 'checked' : '');?> >
-				<label for="radio_off">Desativado</label>
-				<input class="input_radio radio_off" type="radio" name="status_alert_option" id="radio_off" value=2 <?php echo($rs->alertstatus==0 ? 'checked' : '');?>>
-			</fieldset>
-		</div>
+		
 				
 		<?php 	}  //end foreach 	?>	
 
 		<?php else:  ?>
 		
-		<div class="status_alert" >		
-			<fieldset>
-				<legend>Estado do Alerta: </legend>
-				<span class="ui-widget ui-state-default ui-corner-all labelStatus">Alerta não cadastrado</span>
-			</fieldset>
-		</div>
 		<?php endif;  ?>
 		
 		</div>
